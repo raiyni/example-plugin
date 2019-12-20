@@ -84,6 +84,7 @@ public class HeatmapPlugin extends Plugin
 		if ("setBankTitle".equals(event.getEventName()))
 		{
 			Item[] items = getBankTabItems();
+			heatmapItemOverlay.getHeatmapImages().invalidateAll();
 			heatmapCalculation.calculate(items);
 		}
 	}
