@@ -48,7 +48,7 @@ public class HeatmapPlugin extends Plugin
 		Varbits.BANK_TAB_NINE_COUNT
 	);
 
-	private static final int BANK_MENU_WIDGET_ID = (WidgetID.BANK_GROUP_ID << 16) + 9;
+	private static final int BANK_MENU_WIDGET_ID = (WidgetID.BANK_GROUP_ID << 16) + 106;
 
 	@Inject
 	private Client client;
@@ -92,7 +92,7 @@ public class HeatmapPlugin extends Plugin
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (event.getType() != MenuAction.WIDGET_DEFAULT.getId() || !event.getOption().equals("Show menu")
+		if (event.getType() != MenuAction.CC_OP.getId() || !event.getOption().equals("Show menu")
 			|| event.getActionParam1() != BANK_MENU_WIDGET_ID)
 		{
 			return;
