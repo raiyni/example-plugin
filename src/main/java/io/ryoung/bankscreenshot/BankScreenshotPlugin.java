@@ -253,7 +253,8 @@ public class BankScreenshotPlugin extends Plugin
 				}
 				else
 				{
-					image = itemManager.getImage(item.getItemId(), item.getItemQuantity(), item.getItemQuantityMode() == ItemQuantityMode.ALWAYS);
+					boolean stackable = item.getItemQuantity() > 1 || item.getItemQuantityMode() == ItemQuantityMode.ALWAYS;
+					image = itemManager.getImage(item.getItemId(), item.getItemQuantity(), stackable);
 				}
 
 				graphics.drawImage(image, item.getRelativeX(), item.getRelativeY() + padding, null);
