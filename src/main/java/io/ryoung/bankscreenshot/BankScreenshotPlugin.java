@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.ItemComposition;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -30,6 +31,7 @@ import net.runelite.client.ui.JagexColors;
 import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.ImageCapture;
 import net.runelite.client.util.ImageUploadStyle;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
 @Slf4j
@@ -230,7 +232,7 @@ public class BankScreenshotPlugin extends Plugin
 			graphics.setFont(font);
 			int width = graphics.getFontMetrics().stringWidth(text);
 			graphics.setColor(JagexColors.DARK_ORANGE_INTERFACE_TEXT);
-			graphics.drawString(text, (screenshot.getWidth() - width) / 2, 20);
+			graphics.drawString(text, (screenshot.getWidth() - width) / 2, 25);
 		}
 
 
@@ -244,7 +246,16 @@ public class BankScreenshotPlugin extends Plugin
 			BufferedImage image;
 			if (item.getItemId() > 0)
 			{
-				image = itemManager.getImage(item.getItemId(), item.getItemQuantity(), item.getItemQuantityMode() == ItemQuantityMode.ALWAYS);
+				ItemComposition composition = itemManager.getItemComposition(item.getItemId());
+				if (composition.getPlaceholderTemplateId() > 0)
+				{
+					image = ImageUtil.alphaOffset(itemManager.getImage(item.getItemId(), 0, true), 0.5f);
+				}
+				else
+				{
+					image = itemManager.getImage(item.getItemId(), item.getItemQuantity(), item.getItemQuantityMode() == ItemQuantityMode.ALWAYS);
+				}
+
 				graphics.drawImage(image, item.getRelativeX(), item.getRelativeY() + padding, null);
 			}
 			else
