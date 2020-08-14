@@ -12,12 +12,12 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.ScriptID;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
-import net.runelite.api.events.ScriptCallbackEvent;
+import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -77,9 +77,9 @@ public class HeatmapPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onScriptCallbackEvent(ScriptCallbackEvent event)
+	public void onScriptPostFired(ScriptPostFired event)
 	{
-		if ("setBankTitle".equals(event.getEventName()))
+		if (event.getScriptId() == ScriptID.BANKMAIN_BUILD)
 		{
 			Item[] items = getBankTabItems();
 			heatmapItemOverlay.getHeatmapImages().invalidateAll();
@@ -91,7 +91,7 @@ public class HeatmapPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		if (event.getType() != MenuAction.CC_OP.getId() || !event.getOption().equals("Show menu")
-			|| (event.getActionParam1() >> 16) != WidgetID.BANK_GROUP_ID )
+			|| (event.getActionParam1() >> 16) != WidgetID.BANK_GROUP_ID)
 		{
 			return;
 		}
@@ -125,7 +125,7 @@ public class HeatmapPlugin extends Plugin
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
 		if ((event.getMenuAction() != MenuAction.WIDGET_FOURTH_OPTION && event.getMenuAction() != MenuAction.WIDGET_FIFTH_OPTION)
-			|| (event.getWidgetId() >> 16) != WidgetID.BANK_GROUP_ID  || !event.getMenuOption().startsWith("Toggle"))
+			|| (event.getWidgetId() >> 16) != WidgetID.BANK_GROUP_ID || !event.getMenuOption().startsWith("Toggle"))
 		{
 			return;
 		}
