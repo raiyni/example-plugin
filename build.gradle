@@ -10,7 +10,7 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = '1.6.17-SNAPSHOT'
+def runeLiteVersion = '1.6.26-SNAPSHOT'
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
@@ -26,7 +26,7 @@ dependencies {
 }
 
 group = 'io.ryoung.heatmap'
-version = '1.1'
+version = '1.2'
 sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {

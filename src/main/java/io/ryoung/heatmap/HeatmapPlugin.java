@@ -1,6 +1,7 @@
 package io.ryoung.heatmap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.inject.Provides;
 import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
@@ -17,8 +18,12 @@ import net.runelite.api.Varbits;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.ScriptPostFired;
+import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
+import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -60,6 +65,12 @@ public class HeatmapPlugin extends Plugin
 	@Inject
 	private HeatmapItemOverlay heatmapItemOverlay;
 
+	@Inject
+	private HeatmapTutorialOverlay heatmapTutorialOverlay;
+
+	@Inject
+	private HeatmapConfig config;
+
 	@Getter
 	private HEATMAP_MODE heatmapMode = HEATMAP_MODE.NULL;
 
@@ -67,13 +78,39 @@ public class HeatmapPlugin extends Plugin
 	protected void startUp()
 	{
 		overlayManager.add(heatmapItemOverlay);
+		overlayManager.add(heatmapTutorialOverlay);
 	}
 
 	@Override
 	protected void shutDown()
 	{
 		overlayManager.remove(heatmapItemOverlay);
+		overlayManager.remove(heatmapTutorialOverlay);
 		heatmapMode = HEATMAP_MODE.NULL;
+	}
+
+	@Provides
+	HeatmapConfig provideConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(HeatmapConfig.class);
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!"heatmap".equals(event.getGroup()) || !"tutorial".equals(event.getKey()))
+		{
+			return;
+		}
+
+		if (config.showTutorial())
+		{
+			overlayManager.add(heatmapTutorialOverlay);
+		}
+		else
+		{
+			overlayManager.remove(heatmapTutorialOverlay);
+		}
 	}
 
 	@Subscribe
@@ -118,15 +155,34 @@ public class HeatmapPlugin extends Plugin
 		entries[entries.length - 2] = haHeatmap;
 		entries[entries.length - 1] = geHeatmap;
 
+		if (config.showTutorial())
+		{
+			entries = Arrays.copyOf(entries, entries.length + 1);
+			MenuEntry tutorial = new MenuEntry();
+			tutorial.setOption("Disable tutorial");
+			tutorial.setTarget("");
+			tutorial.setType(MenuAction.WIDGET_FIFTH_OPTION.getId() + 2000);
+			tutorial.setIdentifier(event.getIdentifier());
+			tutorial.setParam0(event.getActionParam0());
+			tutorial.setParam1(event.getActionParam1());
+			entries[entries.length - 1] = tutorial;
+		}
+
 		client.setMenuEntries(entries);
 	}
 
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if ((event.getMenuAction() != MenuAction.WIDGET_FOURTH_OPTION && event.getMenuAction() != MenuAction.WIDGET_FIFTH_OPTION)
-			|| (event.getWidgetId() >> 16) != WidgetID.BANK_GROUP_ID || !event.getMenuOption().startsWith("Toggle"))
+		if (event.getWidgetId() != WidgetInfo.BANK_SETTINGS_BUTTON.getId() ||
+			(!event.getMenuOption().startsWith("Toggle") && !event.getMenuOption().startsWith("Disable")))
 		{
+			return;
+		}
+
+		if (event.getMenuOption().equals("Disable tutorial"))
+		{
+			config.setTutorial(false);
 			return;
 		}
 
@@ -172,5 +228,11 @@ public class HeatmapPlugin extends Plugin
 	HeatmapItem getHeatmapItem(int id)
 	{
 		return heatmapCalculation.getHeatmapItems().get(id);
+	}
+
+	boolean isBankVisible()
+	{
+		Widget bank = client.getWidget(WidgetInfo.BANK_CONTAINER);
+		return config.showTutorial() && bank != null && !bank.isSelfHidden();
 	}
 }
