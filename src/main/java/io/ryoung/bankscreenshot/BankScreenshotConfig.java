@@ -57,4 +57,14 @@ public interface BankScreenshotConfig extends Config
 	{
 		return DisplayMode.FRAME;
 	}
+
+	@ConfigItem(
+		keyName = "useResourcePack",
+		name = "Use Resource Pack",
+		description = "Use Resource Pack theme for screenshot"
+	)
+	default boolean resourcePack()
+	{
+		return true;
+	}
 }

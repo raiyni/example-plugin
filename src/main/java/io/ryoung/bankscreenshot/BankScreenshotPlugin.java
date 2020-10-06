@@ -6,12 +6,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.FontID;
 import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
+import net.runelite.api.SpritePixels;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -219,7 +221,7 @@ public class BankScreenshotPlugin extends Plugin
 		BufferedImage screenshot = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics graphics = screenshot.getGraphics();
 
-		BufferedImage background = spriteManager.getSprite(297, 0);
+		BufferedImage background = getSprite(297);
 		int x = screenshot.getWidth() / background.getWidth() + 1;
 		y = screenshot.getHeight() / background.getHeight() + 1;
 		for (int i = 0; i < x; i++)
@@ -244,7 +246,7 @@ public class BankScreenshotPlugin extends Plugin
 			titleGraphics.setClip(0, 0, titleBar.getWidth(), titleBar.getHeight());
 			drawWidget(titleGraphics, titleBar, 0, 0, 0, 0, false);
 
-			BufferedImage closeBtn = spriteManager.getSprite(535, 0);
+			BufferedImage closeBtn = getSprite(535);
 			graphics.drawImage(closeBtn, width - closeBtn.getWidth() - 7, 7, null);
 			titleGraphics.dispose();
 
@@ -323,22 +325,22 @@ public class BankScreenshotPlugin extends Plugin
 		Graphics layer = graphics.create(x, y, width, height);
 		layer.setClip(0, 0, width, height);
 
-		BufferedImage sprite = spriteManager.getSprite(792, 0);
+		BufferedImage sprite = getSprite(792);
 		layer.drawImage(sprite, 0, 16, width, height - 32, null);
 
-		sprite = spriteManager.getSprite(790, 0);
+		sprite = getSprite(790);
 		layer.drawImage(sprite, 0, 16, width, height - 32, null);
 
-		sprite = spriteManager.getSprite(789, 0);
+		sprite = getSprite(789);
 		layer.drawImage(sprite, 0, 16, width, 5, null);
 
-		sprite = spriteManager.getSprite(791, 0);
+		sprite = getSprite(791);
 		layer.drawImage(sprite, 0, height - 21, width, 5, null);
 
-		sprite = spriteManager.getSprite(773, 0);
+		sprite = getSprite(773);
 		layer.drawImage(sprite, 0, 0, 16, 16, null);
 
-		sprite = spriteManager.getSprite(788, 0);
+		sprite = getSprite(788);
 		layer.drawImage(sprite, 0, height - 16, 16, 16, null);
 
 		layer.dispose();
@@ -346,41 +348,41 @@ public class BankScreenshotPlugin extends Plugin
 
 	private void drawFrame(Graphics graphics, int width, int height)
 	{
-		BufferedImage sprite = spriteManager.getSprite(310, 0);
+		BufferedImage sprite = getSprite(310);
 		graphics.drawImage(sprite, 0, 0, null);
 
-		sprite = spriteManager.getSprite(314, 0);
+		sprite = getSprite(314);
 		for (int x = 6; x < width - 6; x += sprite.getWidth())
 		{
 			graphics.drawImage(sprite, x, 0, null);
 			graphics.drawImage(sprite, x, 29, null);
 		}
 
-		sprite = spriteManager.getSprite(173, 0);
+		sprite = getSprite(173);
 		for (int x = 6; x < width - 6; x += sprite.getWidth())
 		{
 			graphics.drawImage(sprite, x, height - sprite.getHeight(), null);
 		}
 
-		sprite = spriteManager.getSprite(172, 0);
+		sprite = getSprite(172);
 		for (int y = 6; y < height - 6; y += sprite.getHeight())
 		{
 			graphics.drawImage(sprite, 0, y, null);
 		}
 
-		sprite = spriteManager.getSprite(315, 0);
+		sprite = getSprite(315);
 		for (int y = 6; y < height - 6; y += sprite.getHeight())
 		{
 			graphics.drawImage(sprite, width - sprite.getWidth(), y, null);
 		}
 
-		sprite = spriteManager.getSprite(311, 0);
+		sprite = getSprite(311);
 		graphics.drawImage(sprite, width - sprite.getWidth(), 0, null);
 
-		sprite = spriteManager.getSprite(312, 0);
+		sprite = getSprite(312);
 		graphics.drawImage(sprite, 0, height - sprite.getHeight(), null);
 
-		sprite = spriteManager.getSprite(313, 0);
+		sprite = getSprite(313);
 		graphics.drawImage(sprite, width - sprite.getWidth(), height - sprite.getHeight(), null);
 	}
 
@@ -434,7 +436,7 @@ public class BankScreenshotPlugin extends Plugin
 		int height = child.getHeight();
 		if (child.getSpriteId() > 0)
 		{
-			BufferedImage childImage = spriteManager.getSprite(child.getSpriteId(), 0);
+			BufferedImage childImage = getSprite(child.getSpriteId());
 
 			if (child.getSpriteTiling() && shouldTile)
 			{
@@ -550,6 +552,20 @@ public class BankScreenshotPlugin extends Plugin
 			graphics.setColor(new Color(child.getTextColor()));
 			graphics.drawLine(child.getRelativeX(), child.getRelativeY(), child.getRelativeX() + child.getWidth(), child.getRelativeY());
 		}
+	}
+
+	private BufferedImage getSprite(int id)
+	{
+		if (config.resourcePack())
+		{
+			SpritePixels pixels = client.getSpriteOverrides().get(id);
+			if (pixels != null)
+			{
+				return pixels.toBufferedImage();
+			}
+		}
+
+		return spriteManager.getSprite(id,0);
 	}
 
 	private void drawScaled(Graphics graphics, BufferedImage image, int x, int y, int width, int height)
