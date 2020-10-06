@@ -8,6 +8,26 @@ import net.runelite.client.config.Keybind;
 @ConfigGroup("bankscreenshot")
 public interface BankScreenshotConfig extends Config
 {
+	enum DisplayMode
+	{
+		MINIMAL("Minimal"),
+		TITLE("Title"),
+		FRAME("Frame");
+
+		private final String name;
+
+		DisplayMode(String str)
+		{
+			this.name = str;
+		}
+
+		@Override
+		public String toString()
+		{
+			return this.name;
+		}
+	}
+
 	@ConfigItem(
 		keyName = "hotkey",
 		name = "Hotkey",
@@ -29,12 +49,12 @@ public interface BankScreenshotConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "title",
-		name = "Show title in screenshot",
-		description = "Show bank title in the screenshot"
+		keyName = "displayMode",
+		name = "Display",
+		description = "Information to display in screenshot"
 	)
-	default boolean title()
+	default DisplayMode info()
 	{
-		return true;
+		return DisplayMode.FRAME;
 	}
 }
