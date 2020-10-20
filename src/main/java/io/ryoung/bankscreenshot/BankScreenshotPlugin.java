@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Map;
@@ -556,16 +557,44 @@ public class BankScreenshotPlugin extends Plugin
 
 	private BufferedImage getSprite(int id)
 	{
+		BufferedImage original = spriteManager.getSprite(id, 0);
 		if (config.resourcePack())
 		{
 			SpritePixels pixels = client.getSpriteOverrides().get(id);
 			if (pixels != null)
 			{
-				return pixels.toBufferedImage();
+				BufferedImage replaced = pixels.toBufferedImage();
+				if (replaced.getWidth() == original.getWidth() && replaced.getHeight() == original.getHeight()) {
+					return replaced;
+				}
+
+				BufferedImage cropped = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
+
+				if (id == 173)
+				{
+					System.out.println(original.getWidth() + "x" + replaced.getWidth() + " vs " + replaced.getWidth() + "x" + replaced.getHeight());
+				}
+
+				for (int x = 0, cX = 0;  cX < original.getWidth(); cX++) {
+					x = replaced.getWidth() - original.getWidth() + cX;
+					for (int y = 0, cY = 0; cY < original.getHeight(); cY++) {
+						y = replaced.getHeight() - original.getHeight() + cY;
+						int color = replaced.getRGB(x, y);
+
+
+
+						int newX = x - (replaced.getWidth() - original.getWidth());
+						int newY = y - (replaced.getHeight() - original.getHeight());
+
+						cropped.setRGB(newX, newY, color);
+					}
+				}
+
+				return cropped;
 			}
 		}
 
-		return spriteManager.getSprite(id,0);
+		return original;
 	}
 
 	private void drawScaled(Graphics graphics, BufferedImage image, int x, int y, int width, int height)
