@@ -4,9 +4,9 @@ import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
@@ -77,6 +77,8 @@ public class BankScreenshotPlugin extends Plugin
 	};
 
 	private Widget button = null;
+
+	private Map<Integer, Rectangle> overrideBounds = new HashMap<>();
 
 	@Override
 	protected void startUp() throws Exception
@@ -174,6 +176,7 @@ public class BankScreenshotPlugin extends Plugin
 			return;
 		}
 
+		overrideBounds.clear();
 		client.getWidgetSpriteCache().reset();
 
 
@@ -236,6 +239,7 @@ public class BankScreenshotPlugin extends Plugin
 		Widget content = client.getWidget(WidgetInfo.BANK_CONTENT_CONTAINER);
 		Graphics contentGraphics;
 
+
 		int itemsOffset = 0;
 		if (config.info() == BankScreenshotConfig.DisplayMode.FRAME)
 		{
@@ -245,10 +249,7 @@ public class BankScreenshotPlugin extends Plugin
 
 			Graphics titleGraphics = graphics.create(content.getOriginalX(), 0, titleBar.getWidth(), titleBar.getHeight());
 			titleGraphics.setClip(0, 0, titleBar.getWidth(), titleBar.getHeight());
-			drawWidget(titleGraphics, titleBar, 0, 0, 0, 0, false);
-
-			BufferedImage closeBtn = getSprite(535);
-			graphics.drawImage(closeBtn, width - closeBtn.getWidth() - 7, 7, null);
+			drawWidget(titleGraphics, titleBar, 0, 0);
 			titleGraphics.dispose();
 
 			contentGraphics = graphics.create(content.getRelativeX(), content.getRelativeY(), content.getWidth(), height - titleBar.getHeight() - 16);
@@ -264,13 +265,13 @@ public class BankScreenshotPlugin extends Plugin
 			}
 
 			Widget settingsBtn = client.getWidget(WidgetInfo.BANK_SETTINGS_BUTTON);
-			drawChildren(graphics, settingsBtn, settingsBtn.getRelativeX(), settingsBtn.getRelativeY(), settingsBtn.getHeight(), false);
+			drawChildren(graphics, settingsBtn, settingsBtn.getRelativeX(), settingsBtn.getRelativeY());
 
 			Widget equipBtn = client.getWidget(WidgetInfo.BANK_EQUIPMENT_BUTTON);
-			drawChildren(graphics, equipBtn, equipBtn.getRelativeX(), equipBtn.getRelativeY(), equipBtn.getHeight(), false);
+			drawChildren(graphics, equipBtn, equipBtn.getRelativeX(), equipBtn.getRelativeY());
 
 			Widget tutorialBtn = client.getWidget(WidgetInfo.BANK_TUTORIAL_BUTTON);
-			drawChildren(graphics, tutorialBtn, tutorialBtn.getRelativeX(), tutorialBtn.getRelativeY(), tutorialBtn.getHeight(), false);
+			drawChildren(graphics, tutorialBtn, tutorialBtn.getRelativeX(), tutorialBtn.getRelativeY());
 
 			for (Widget child : content.getStaticChildren())
 			{
@@ -303,7 +304,7 @@ public class BankScreenshotPlugin extends Plugin
 		{
 			Widget titleBar = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
 			Graphics titleGraphics = graphics.create(0, 0, content.getWidth(), titleBar.getHeight());
-			drawWidget(titleGraphics, titleBar, 0, 0, content.getWidth(), 1, false);
+			drawWidget(titleGraphics, titleBar, 0, 0);
 			titleGraphics.dispose();
 			itemsOffset = 0;
 			contentGraphics = graphics.create(0, titleBar.getHeight() + 16, content.getWidth(), height - titleBar.getHeight() - 16);
@@ -314,11 +315,55 @@ public class BankScreenshotPlugin extends Plugin
 			contentGraphics = graphics.create(0, 16, content.getWidth(), height - 16);
 		}
 
+
 		Widget items = client.getWidget(WidgetInfo.BANK_ITEM_CONTAINER);
-		drawChildren(contentGraphics, items, items.getRelativeX(), itemsOffset, contentGraphics.getClipBounds().height, true);
+		overrideBounds.put(WidgetInfo.BANK_ITEM_CONTAINER.getId(), new Rectangle(items.getRelativeX(), itemsOffset, items.getWidth(), height));
+		drawChildren(contentGraphics, items, items.getRelativeX(), itemsOffset);
 
 		contentGraphics.dispose();
 		imageCapture.takeScreenshot(screenshot, "bankscreenshot", "bank", true, ImageUploadStyle.NEITHER);
+	}
+
+	private void drawFrame(Graphics graphics, int width, int height)
+	{
+		Widget frameParent = client.getWidget(12, 2);
+		Widget[] pieces = frameParent.getDynamicChildren();
+
+		Map<Integer, Rectangle> overrides = new HashMap<Integer, Rectangle>()
+		{{
+			put(310, new Rectangle(0, 0, 25, 30));
+			put(311, new Rectangle(width - 25, 0, 25, 30));
+			put(312, new Rectangle(0, height-30, 25, 30));
+			put(313, new Rectangle(width - 25, height - 30, 25, 30));
+			put(314, new Rectangle(25, -15, width - 50, 36));
+			put(2546, new Rectangle(6, 14, width - 12, 26));
+			put(173, new Rectangle(25, height - 21, width - 50, 36));
+			put(172, new Rectangle(-15, 30, 36, height - 60));
+			put(315, new Rectangle(width - 21, 30, 36, height - 60));
+			put(535, new Rectangle(width - 3 - 26, 6, 26, 23));
+		}};
+
+
+		for (Widget piece : pieces)
+		{
+			Rectangle bounds = overrides.get(piece.getSpriteId());
+			if (bounds == null)
+			{
+				continue;
+			}
+
+			SpritePixels sp = getPixels(piece.getSpriteId());
+			Rectangle clips = graphics.getClipBounds();
+			graphics.setClip(bounds.x, bounds.y, bounds.width, bounds.height);
+			for (int x = bounds.x; x < bounds.width + bounds.x; x += sp.getMaxWidth())
+			{
+				for (int y = bounds.y; y < bounds.height + bounds.y; y += sp.getMaxHeight())
+				{
+					graphics.drawImage(sp.toBufferedImage(), x + sp.getOffsetX(), y + sp.getOffsetY(), null);
+				}
+			}
+			graphics.setClip(clips);
+		}
 	}
 
 	private void drawScrollbar(Graphics graphics, int x, int y, int width, int height)
@@ -347,66 +392,46 @@ public class BankScreenshotPlugin extends Plugin
 		layer.dispose();
 	}
 
-	private void drawFrame(Graphics graphics, int width, int height)
-	{
-		BufferedImage sprite = getSprite(310);
-		graphics.drawImage(sprite, 0, 0, null);
-
-		sprite = getSprite(314);
-		for (int x = 6; x < width - 6; x += sprite.getWidth())
-		{
-			graphics.drawImage(sprite, x, 0, null);
-			graphics.drawImage(sprite, x, 29, null);
-		}
-
-		sprite = getSprite(173);
-		for (int x = 6; x < width - 6; x += sprite.getWidth())
-		{
-			graphics.drawImage(sprite, x, height - sprite.getHeight(), null);
-		}
-
-		sprite = getSprite(172);
-		for (int y = 6; y < height - 6; y += sprite.getHeight())
-		{
-			graphics.drawImage(sprite, 0, y, null);
-		}
-
-		sprite = getSprite(315);
-		for (int y = 6; y < height - 6; y += sprite.getHeight())
-		{
-			graphics.drawImage(sprite, width - sprite.getWidth(), y, null);
-		}
-
-		sprite = getSprite(311);
-		graphics.drawImage(sprite, width - sprite.getWidth(), 0, null);
-
-		sprite = getSprite(312);
-		graphics.drawImage(sprite, 0, height - sprite.getHeight(), null);
-
-		sprite = getSprite(313);
-		graphics.drawImage(sprite, width - sprite.getWidth(), height - sprite.getHeight(), null);
-	}
-
-
-	private void drawChildren(Graphics graphics, Widget child, int x, int y, int overHeight, boolean shouldTile)
+	private void drawChildren(Graphics graphics, Widget child, int x, int y)
 	{
 		if (child == null || child.isHidden())
 		{
 			return;
 		}
 
-		Graphics layer = graphics.create(x, y, child.getWidth(), overHeight > 0 ? overHeight : child.getHeight());
-		layer.setClip(0, 0, child.getWidth(), overHeight > 0 ? overHeight : child.getHeight());
-		drawWidget(graphics, child, child.getRelativeX(), child.getRelativeY(), 0, 0, shouldTile);
+		Graphics layer;
+
+		Rectangle bounds = overrideBounds.get(child.getId());
+		if (bounds != null)
+		{
+			layer = graphics.create(bounds.x, bounds.y, bounds.width, bounds.height);
+			layer.setClip(0, 0, bounds.width, bounds.height);
+		}
+		else
+		{
+			layer = graphics.create(x, y, child.getWidth(), child.getHeight());
+			layer.setClip(0, 0, child.getWidth(), child.getHeight());
+		}
+		drawWidget(graphics, child, child.getRelativeX(), child.getRelativeY());
 
 		if (child.getStaticChildren() != null)
 		{
 			for (Widget children : child.getStaticChildren())
 			{
-				drawChildren(layer, children, children.getRelativeX(), children.getRelativeY(), children.getHeight(), shouldTile);
+				drawChildren(layer, children, children.getRelativeX(), children.getRelativeY());
 			}
 		}
 
+		if (child.getDynamicChildren() != null)
+		{
+			drawDynamicChildren(layer, child, 0, 0);
+		}
+
+		layer.dispose();
+	}
+
+	private void drawDynamicChildren(Graphics graphics, Widget child, int x, int y)
+	{
 		if (child.getDynamicChildren() != null)
 		{
 			Widget[] children = child.getDynamicChildren();
@@ -414,46 +439,37 @@ public class BankScreenshotPlugin extends Plugin
 			for (int i = 0; i < children.length; i++)
 			{
 				Widget child2 = children[i];
-				drawWidget(layer, child2, child2.getRelativeX(), child2.getRelativeY(), 0, 0, shouldTile);
+				drawWidget(graphics, child2, child2.getRelativeX(), child2.getRelativeY());
 			}
 		}
-
-		layer.dispose();
 	}
 
-	private void drawChildren(Graphics graphics, Widget child, int x, int y)
-	{
-		drawChildren(graphics, child, x, y, child.getHeight(), true);
-	}
-
-	private void drawWidget(Graphics graphics, Widget child, int x, int y, int overWidth, int overX, boolean shouldTile)
+	private void drawWidget(Graphics graphics, Widget child, int x, int y)
 	{
 		if (child == null || child.isHidden() || child.getType() == 0)
 		{
 			return;
 		}
 
-		int width = overWidth > 0 ? overWidth : child.getWidth();
+		int width = child.getWidth();
 		int height = child.getHeight();
 		if (child.getSpriteId() > 0)
 		{
-			BufferedImage childImage = getSprite(child.getSpriteId());
+			SpritePixels sp = getPixels(child.getSpriteId());
+			BufferedImage childImage = sp.toBufferedImage();
 
-			if (child.getSpriteTiling() && shouldTile)
+
+			if (child.getSpriteTiling())
 			{
-
-				int sw = x, ew = width + x,
-					sh = y, eh = height + y,
-					iw = childImage.getWidth(), ih = childImage.getHeight();
-
 				Rectangle clips = graphics.getClipBounds();
 				graphics.setClip(x, y, child.getWidth(), child.getHeight());
 
-				for (int dx = sw; dx < ew; dx += iw)
+				for (int dx = x; dx < child.getWidth() + x; dx += sp.getMaxWidth())
 				{
-					for (int dy = sh; dy < eh; dy += ih)
+					for (int dy = y; dy < child.getHeight() + y; dy += sp.getMaxHeight())
 					{
-						drawAt(graphics, childImage, dx, dy);
+
+						drawAt(graphics, childImage, dx + sp.getOffsetX(), dy + sp.getOffsetY());
 					}
 				}
 
@@ -496,7 +512,7 @@ public class BankScreenshotPlugin extends Plugin
 			String text = Text.removeTags(child.getText());
 			Font font = FontManager.getRunescapeFont();
 
-			Graphics textLayer = graphics.create(overX > 0 ? overX : child.getRelativeX(), child.getRelativeY(), width, height);
+			Graphics textLayer = graphics.create(child.getRelativeX(), child.getRelativeY(), width, height);
 
 			if (child.getFontId() == FontID.PLAIN_11)
 			{
@@ -555,46 +571,30 @@ public class BankScreenshotPlugin extends Plugin
 		}
 	}
 
-	private BufferedImage getSprite(int id)
+	private SpritePixels getPixels(int archive)
 	{
-		BufferedImage original = spriteManager.getSprite(id, 0);
 		if (config.resourcePack())
 		{
-			SpritePixels pixels = client.getSpriteOverrides().get(id);
+			SpritePixels pixels = client.getSpriteOverrides().get(archive);
 			if (pixels != null)
 			{
-				BufferedImage replaced = pixels.toBufferedImage();
-				if (replaced.getWidth() == original.getWidth() && replaced.getHeight() == original.getHeight()) {
-					return replaced;
-				}
-
-				BufferedImage cropped = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
-
-				if (id == 173)
-				{
-					System.out.println(original.getWidth() + "x" + replaced.getWidth() + " vs " + replaced.getWidth() + "x" + replaced.getHeight());
-				}
-
-				for (int x = 0, cX = 0;  cX < original.getWidth(); cX++) {
-					x = replaced.getWidth() - original.getWidth() + cX;
-					for (int y = 0, cY = 0; cY < original.getHeight(); cY++) {
-						y = replaced.getHeight() - original.getHeight() + cY;
-						int color = replaced.getRGB(x, y);
-
-
-
-						int newX = x - (replaced.getWidth() - original.getWidth());
-						int newY = y - (replaced.getHeight() - original.getHeight());
-
-						cropped.setRGB(newX, newY, color);
-					}
-				}
-
-				return cropped;
+				return pixels;
 			}
 		}
 
-		return original;
+		SpritePixels[] sp = client.getSprites(client.getIndexSprites(), archive, 0);
+		if (sp == null)
+		{
+			return null;
+		}
+
+		return sp[0];
+	}
+
+
+	private BufferedImage getSprite(int id)
+	{
+		return getPixels(id).toBufferedImage();
 	}
 
 	private void drawScaled(Graphics graphics, BufferedImage image, int x, int y, int width, int height)
