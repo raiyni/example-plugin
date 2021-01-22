@@ -304,7 +304,8 @@ public class BankScreenshotPlugin extends Plugin
 		{
 			Widget titleBar = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
 			Graphics titleGraphics = graphics.create(0, 0, content.getWidth(), titleBar.getHeight());
-			drawWidget(titleGraphics, titleBar, 0, 0);
+			overrideBounds.put(titleBar.getId() | titleBar.getParentId(), new Rectangle(0, 5, content.getWidth(), titleBar.getHeight()));
+			drawWidget(titleGraphics, titleBar, 0, 5);
 			titleGraphics.dispose();
 			itemsOffset = 0;
 			contentGraphics = graphics.create(0, titleBar.getHeight() + 16, content.getWidth(), height - titleBar.getHeight() - 16);
@@ -317,7 +318,7 @@ public class BankScreenshotPlugin extends Plugin
 
 
 		Widget items = client.getWidget(WidgetInfo.BANK_ITEM_CONTAINER);
-		overrideBounds.put(WidgetInfo.BANK_ITEM_CONTAINER.getId(), new Rectangle(items.getRelativeX(), itemsOffset, items.getWidth(), height));
+		overrideBounds.put(items.getId() | items.getParentId(), new Rectangle(items.getRelativeX(), itemsOffset, items.getWidth(), height));
 		drawChildren(contentGraphics, items, items.getRelativeX(), itemsOffset);
 
 		contentGraphics.dispose();
@@ -401,7 +402,7 @@ public class BankScreenshotPlugin extends Plugin
 
 		Graphics layer;
 
-		Rectangle bounds = overrideBounds.get(child.getId());
+		Rectangle bounds = overrideBounds.get(child.getId() | child.getParentId());
 		if (bounds != null)
 		{
 			layer = graphics.create(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -453,6 +454,7 @@ public class BankScreenshotPlugin extends Plugin
 
 		int width = child.getWidth();
 		int height = child.getHeight();
+
 		if (child.getSpriteId() > 0)
 		{
 			SpritePixels sp = getPixels(child.getSpriteId());
@@ -511,8 +513,18 @@ public class BankScreenshotPlugin extends Plugin
 		{
 			String text = Text.removeTags(child.getText());
 			Font font = FontManager.getRunescapeFont();
+			x = child.getRelativeX();
+			y = child.getRelativeY();
 
-			Graphics textLayer = graphics.create(child.getRelativeX(), child.getRelativeY(), width, height);
+			Rectangle bounds = overrideBounds.get(child.getId() | child.getParentId());
+			if (bounds != null) {
+				x = bounds.x;
+				y = bounds.y;
+				width = bounds.width;
+				height = bounds.height;
+			}
+
+			Graphics textLayer = graphics.create(x, y, width, height);
 
 			if (child.getFontId() == FontID.PLAIN_11)
 			{
@@ -532,9 +544,11 @@ public class BankScreenshotPlugin extends Plugin
 			int xPos = 0;
 			int yPos = 0;
 
-			int textWidth = textLayer.getFontMetrics().stringWidth(child.getText());
+			int textWidth = textLayer.getFontMetrics().stringWidth(text);
 
-			if (child.getXTextAlignment() == 1)
+			if (child.getXTextAlignment() == 0)
+			{
+			} else if (child.getXTextAlignment() == 1)
 			{
 				xPos = (width - textWidth) / 2 + 1;
 			}
