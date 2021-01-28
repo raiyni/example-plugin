@@ -233,6 +233,6 @@ public class HeatmapPlugin extends Plugin
 	boolean isBankVisible()
 	{
 		Widget bank = client.getWidget(WidgetInfo.BANK_CONTAINER);
-		return config.showTutorial() && bank != null && !bank.isSelfHidden();
+		return config.showTutorial() && bank != null && !bank.isHidden();
 	}
 }
