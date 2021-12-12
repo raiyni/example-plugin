@@ -164,7 +164,6 @@ public class HeatmapPlugin extends Plugin
 
 	public void onClick(MenuEntry e)
 	{
-		log.info("{}", e.getOption());
 		HEATMAP_MODE mode = e.getOption().equals("Toggle GE Heatmap") ? HEATMAP_MODE.GE : HEATMAP_MODE.HA;
 		if (mode == heatmapMode)
 		{
