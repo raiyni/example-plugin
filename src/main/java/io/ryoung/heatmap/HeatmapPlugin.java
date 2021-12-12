@@ -133,60 +133,39 @@ public class HeatmapPlugin extends Plugin
 			return;
 		}
 
-		MenuEntry[] entries = client.getMenuEntries();
-		entries = Arrays.copyOf(entries, entries.length + 2);
+		client.createMenuEntry(-1)
+			.setOption("Toggle GE Heatmap")
+			.setTarget("")
+			.setType(MenuAction.RUNELITE)
+			.onClick(this::onClick)
+			.setDeprioritized(true);
 
-		MenuEntry geHeatmap = new MenuEntry();
-		geHeatmap.setOption("Toggle GE Heatmap");
-		geHeatmap.setTarget("");
-		geHeatmap.setType(MenuAction.WIDGET_FOURTH_OPTION.getId() + 2000);
-		geHeatmap.setIdentifier(event.getIdentifier());
-		geHeatmap.setParam0(event.getActionParam0());
-		geHeatmap.setParam1(event.getActionParam1());
+		client.createMenuEntry(-1)
+			.setOption("Toggle HA Heatmap")
+			.setTarget("")
+			.setType(MenuAction.RUNELITE)
+			.onClick(this::onClick)
+			.setDeprioritized(true);
 
-		MenuEntry haHeatmap = new MenuEntry();
-		haHeatmap.setOption("Toggle HA Heatmap");
-		haHeatmap.setTarget("");
-		haHeatmap.setType(MenuAction.WIDGET_FIFTH_OPTION.getId() + 2000);
-		haHeatmap.setIdentifier(event.getIdentifier());
-		haHeatmap.setParam0(event.getActionParam0());
-		haHeatmap.setParam1(event.getActionParam1());
-
-		entries[entries.length - 2] = haHeatmap;
-		entries[entries.length - 1] = geHeatmap;
 
 		if (config.showTutorial())
 		{
-			entries = Arrays.copyOf(entries, entries.length + 1);
-			MenuEntry tutorial = new MenuEntry();
-			tutorial.setOption("Disable tutorial");
-			tutorial.setTarget("");
-			tutorial.setType(MenuAction.WIDGET_FIFTH_OPTION.getId() + 2000);
-			tutorial.setIdentifier(event.getIdentifier());
-			tutorial.setParam0(event.getActionParam0());
-			tutorial.setParam1(event.getActionParam1());
-			entries[entries.length - 1] = tutorial;
+			client.createMenuEntry(-1)
+				.setOption("Disable tutorial")
+				.setTarget("")
+				.setType(MenuAction.WIDGET_FIFTH_OPTION)
+				.setIdentifier(event.getIdentifier())
+				.setParam0(event.getActionParam0())
+				.setParam1(event.getActionParam1())
+				.onClick(e -> config.setTutorial(false))
+				.setDeprioritized(true);
 		}
-
-		client.setMenuEntries(entries);
 	}
 
-	@Subscribe
-	public void onMenuOptionClicked(MenuOptionClicked event)
+	public void onClick(MenuEntry e)
 	{
-		if (event.getWidgetId() != WidgetInfo.BANK_SETTINGS_BUTTON.getId() ||
-			(!event.getMenuOption().startsWith("Toggle") && !event.getMenuOption().startsWith("Disable")))
-		{
-			return;
-		}
-
-		if (event.getMenuOption().equals("Disable tutorial"))
-		{
-			config.setTutorial(false);
-			return;
-		}
-
-		HEATMAP_MODE mode = event.getMenuOption().equals("Toggle GE Heatmap") ? HEATMAP_MODE.GE : HEATMAP_MODE.HA;
+		log.info("{}", e.getOption());
+		HEATMAP_MODE mode = e.getOption().equals("Toggle GE Heatmap") ? HEATMAP_MODE.GE : HEATMAP_MODE.HA;
 		if (mode == heatmapMode)
 		{
 			heatmapMode = HEATMAP_MODE.NULL;
