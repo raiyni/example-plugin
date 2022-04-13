@@ -41,7 +41,7 @@ public class HeatmapPlugin extends Plugin
 		GE
 	}
 
-	private static final List<Varbits> TAB_VARBITS = ImmutableList.of(
+	private static final List<Integer> TAB_VARBITS = ImmutableList.of(
 		Varbits.BANK_TAB_ONE_COUNT,
 		Varbits.BANK_TAB_TWO_COUNT,
 		Varbits.BANK_TAB_THREE_COUNT,
@@ -186,7 +186,7 @@ public class HeatmapPlugin extends Plugin
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVar(Varbits.CURRENT_BANK_TAB);
+		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 
 		if (currentTab > 0)
 		{
@@ -194,10 +194,10 @@ public class HeatmapPlugin extends Plugin
 
 			for (int i = currentTab - 1; i > 0; i--)
 			{
-				startIndex += client.getVar(TAB_VARBITS.get(i - 1));
+				startIndex += client.getVarbitValue(TAB_VARBITS.get(i - 1));
 			}
 
-			int itemCount = client.getVar(TAB_VARBITS.get(currentTab - 1));
+			int itemCount = client.getVarbitValue(TAB_VARBITS.get(currentTab - 1));
 			return Arrays.copyOfRange(items, startIndex, startIndex + itemCount);
 		}
 
