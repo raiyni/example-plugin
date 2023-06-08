@@ -1,22 +1,38 @@
 package io.ryoung.areamute;
 
 import com.google.inject.Provides;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Actor;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.MessageNode;
+import net.runelite.api.Player;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.CommandExecuted;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.OverheadTextChanged;
 import net.runelite.api.events.ScriptCallbackEvent;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.chatfilter.ChatFilterPlugin;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.Text;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Example"
+	name = "Area Mute",
+	description = "Mute player chat within regions of the game"
 )
 public class AreaMutePlugin extends Plugin
 {
@@ -28,6 +44,30 @@ public class AreaMutePlugin extends Plugin
 
 	@Inject
 	private OverlayManager overlayManager;
+
+	private final Set<Integer> regions = new HashSet<>();
+
+	private final LinkedHashMap<Integer, Boolean> chatCache = new LinkedHashMap<Integer, Boolean>()
+	{
+		private static final int MAX_ENTRIES = 2000;
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<Integer, Boolean> eldest)
+		{
+			return size() > MAX_ENTRIES;
+		}
+	};
+
+//	private final LinkedHashMap<String, WorldPoint> locCache = new LinkedHashMap<String, WorldPoint>()
+//	{
+//		private static final int MAX_ENTRIES = 200;
+//
+//		@Override
+//		protected boolean removeEldestEntry(Map.Entry<String, WorldPoint> eldest)
+//		{
+//			return size() > MAX_ENTRIES;
+//		}
+//	};
 
 //	@Inject
 //	private AreaMuteOverlay overlay;
@@ -44,141 +84,140 @@ public class AreaMutePlugin extends Plugin
 //		overlayManager.remove(overlay);
 	}
 
+	public void muteArea(int regionId) {
+		log.debug("adding region {}", regionId);
+		regions.add(regionId);
+	}
+
+	public boolean shouldFilter(Player actor)
+	{
+		if (actor == null)
+		{
+			return false;
+		}
+
+		if (actor == client.getLocalPlayer() && !config.filterSelf())
+		{
+			return false;
+		}
+
+		if (actor.isFriend() && !config.filterFriends())
+		{
+			return false;
+		}
+
+		if (actor.isClanMember() && !config.filterClanMates())
+		{
+			return false;
+		}
+
+		if (actor.isFriendsChatMember() && !config.filterFriendChat())
+		{
+			return false;
+		}
+
+		return regions.contains(actor.getWorldLocation().getRegionID());
+	}
+
 	@Subscribe
 	public void onCommandExecuted(CommandExecuted event)
 	{
+		switch(event.getCommand()) {
+			case "amute":
+				this.muteArea(client.getLocalPlayer().getWorldLocation().getRegionID());
+		}
+	}
 
+	@Subscribe(priority = -999999)
+	public void onOverheadTextChanged(OverheadTextChanged event)
+	{
+		if (!(event.getActor() instanceof Player) || !shouldFilter((Player)event.getActor()))
+		{
+			return;
+		}
+
+		event.getActor().setOverheadText(" ");
 	}
 
 	@Subscribe
-	public void onOverheadTextChanged(OverheadTextChanged event)
+	public void onGameTick(GameTick event)
 	{
-//		if (!(event.getActor() instanceof Player) || !shouldFilterPlayerMessage(event.getActor().getName()))
-//		{
-//			return;
+		int regionId = client.getLocalPlayer().getWorldLocation().getRegionID();
+
+		if (!regions.contains(regionId))
+		{
+			return;
+		}
+
+//		for (Player p : client.getCachedPlayers()) {
+//			if (p != null) {
+//				locCache.put(p.getName(), p.getWorldLocation());
+//			}
 //		}
-//
-//		String message = censorMessage(event.getActor().getName(), event.getOverheadText());
-//
-//		if (message == null)
-//		{
-//			message = " ";
-//		}
-//
-//		event.getActor().setOverheadText(message);
 	}
 
-	@Subscribe(priority = -2) // run after ChatMessageManager
+	@Subscribe(priority = 999999) // run after ChatMessageManager
 	public void onChatMessage(ChatMessage chatMessage)
 	{
-//		if (COLLAPSIBLE_MESSAGETYPES.contains(chatMessage.getType()))
-//		{
-//			final MessageNode messageNode = chatMessage.getMessageNode();
-//			// remove and re-insert into map to move to end of list
-//			final String key = messageNode.getName() + ":" + messageNode.getValue();
-//			ChatFilterPlugin.Duplicate duplicate = duplicateChatCache.remove(key);
-//			if (duplicate == null)
-//			{
-//				duplicate = new ChatFilterPlugin.Duplicate();
+		String name = Text.toJagexName(Text.removeTags(chatMessage.getName()));
+		int messageId = chatMessage.getMessageNode().getId();
+
+		Player actor = null;
+
+		for (Player p : client.getPlayers())
+		{
+			if (name.equalsIgnoreCase(p.getName()))
+			{
+				actor = p;
+				break;
+			}
+		}
+
+		if (actor == null && name.equalsIgnoreCase(client.getLocalPlayer().getName()))
+		{
+			actor = client.getLocalPlayer();
+		}
+
+		if (shouldFilter(actor)) {
+			chatCache.put(messageId, true);
+		}
+
+//		if (actor == null) {
+//			WorldPoint p = locCache.get(name);
+//			if (p != null && regions.contains(p.getRegionID())) {
+//				chatCache.put(messageId, true);
 //			}
-//
-//			duplicate.count++;
-//			duplicate.messageId = messageNode.getId();
-//			duplicateChatCache.put(key, duplicate);
 //		}
 	}
 
 	@Subscribe
 	public void onScriptCallbackEvent(ScriptCallbackEvent event)
 	{
-//		if (!"chatFilterCheck".equals(event.getEventName()))
-//		{
-//			return;
-//		}
-//
-//		int[] intStack = client.getIntStack();
-//		int intStackSize = client.getIntStackSize();
-//		String[] stringStack = client.getStringStack();
-//		int stringStackSize = client.getStringStackSize();
-//
-//		final int messageType = intStack[intStackSize - 2];
-//		final int messageId = intStack[intStackSize - 1];
-//		String message = stringStack[stringStackSize - 1];
-//
-//		ChatMessageType chatMessageType = ChatMessageType.of(messageType);
-//		final MessageNode messageNode = client.getMessages().get(messageId);
-//		final String name = messageNode.getName();
-//		int duplicateCount = 0;
-//		boolean blockMessage = false;
-//
-//		// Only filter public chat and private messages
-//		switch (chatMessageType)
-//		{
-//			case PUBLICCHAT:
-//			case MODCHAT:
-//			case AUTOTYPER:
-//			case PRIVATECHAT:
-//			case MODPRIVATECHAT:
-//			case FRIENDSCHAT:
-//			case CLAN_CHAT:
-//			case CLAN_GUEST_CHAT:
-//			case CLAN_GIM_CHAT:
-//				if (shouldFilterPlayerMessage(Text.removeTags(name)))
-//				{
-//					message = censorMessage(name, message);
-//					blockMessage = message == null;
-//				}
-//				break;
-//			case GAMEMESSAGE:
-//			case ENGINE:
-//			case ITEM_EXAMINE:
-//			case NPC_EXAMINE:
-//			case OBJECT_EXAMINE:
-//			case SPAM:
-//			case CLAN_MESSAGE:
-//			case CLAN_GUEST_MESSAGE:
-//			case CLAN_GIM_MESSAGE:
-//				if (config.filterGameChat())
-//				{
-//					message = censorMessage(null, message);
-//					blockMessage = message == null;
-//				}
-//				break;
-//		}
-//
-//		boolean shouldCollapse = chatMessageType == PUBLICCHAT || chatMessageType == MODCHAT
-//			? config.collapsePlayerChat()
-//			: COLLAPSIBLE_MESSAGETYPES.contains(chatMessageType) && config.collapseGameChat();
-//		if (!blockMessage && shouldCollapse)
-//		{
-//			ChatFilterPlugin.Duplicate duplicateCacheEntry = duplicateChatCache.get(name + ":" + message);
-//			// If messageId is -1 then this is a replayed message, which we can't easily collapse since we don't know
-//			// the most recent message. This is only for public chat since it is the only thing both replayed and also
-//			// collapsed. Just allow uncollapsed playback.
-//			if (duplicateCacheEntry != null && duplicateCacheEntry.messageId != -1)
-//			{
-//				blockMessage = duplicateCacheEntry.messageId != messageId ||
-//					((chatMessageType == PUBLICCHAT || chatMessageType == MODCHAT) &&
-//						config.maxRepeatedPublicChats() > 0 && duplicateCacheEntry.count > config.maxRepeatedPublicChats());
-//				duplicateCount = duplicateCacheEntry.count;
-//			}
-//		}
-//
-//		if (blockMessage)
-//		{
-//			// Block the message
-//			intStack[intStackSize - 3] = 0;
-//		}
-//		else
-//		{
-//			// Replace the message
-//			if (duplicateCount > 1)
-//			{
-//				message += " (" + duplicateCount + ")";
-//			}
-//
-//			stringStack[stringStackSize - 1] = message;
-//		}
+		if (!"chatFilterCheck".equals(event.getEventName()))
+		{
+			return;
+		}
+
+		int[] intStack = client.getIntStack();
+		int intStackSize = client.getIntStackSize();
+		String[] stringStack = client.getStringStack();
+		int stringStackSize = client.getStringStackSize();
+
+		final int messageType = intStack[intStackSize - 2];
+		final int messageId = intStack[intStackSize - 1];
+
+		ChatMessageType chatMessageType = ChatMessageType.of(messageType);
+
+		switch (chatMessageType)
+		{
+			case PUBLICCHAT:
+			case AUTOTYPER:
+				if (chatCache.containsKey(messageId))
+				{
+					intStack[intStackSize - 3] = 0;
+					stringStack[stringStackSize - 1] = null;
+				}
+		}
 	}
 
 	@Provides
