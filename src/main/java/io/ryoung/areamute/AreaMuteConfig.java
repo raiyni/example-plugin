@@ -1,5 +1,7 @@
 package io.ryoung.areamute;
 
+import java.awt.Color;
+import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -46,4 +48,44 @@ public interface AreaMuteConfig extends Config
 	{
 		return false;
 	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "mutedColor",
+		name = "Muted Region Color",
+		description = "Color of muted regions on the map"
+	)
+	default Color mutedColor()
+	{
+		return new Color(255, 0, 0, 180);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "hoveredColor",
+		name = "Hovered Region Color",
+		description = "Color of hovered region on the map"
+	)
+	default Color hoveredColor()
+	{
+		return new Color(255, 255, 255, 95);
+	}
+
+	@ConfigItem(
+		keyName = "regions",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String regions()
+	{
+		return "[]";
+	}
+
+	@ConfigItem(
+		keyName = "regions",
+		name = "",
+		description = ""
+	)
+	void regions(String regions);
 }
