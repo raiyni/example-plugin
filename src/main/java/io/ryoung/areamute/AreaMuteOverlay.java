@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -22,6 +23,7 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 public class AreaMuteOverlay extends Overlay
 {
 	private static final float STROKE_WIDTH = 2f;
+	private static final Stroke STROKE = new BasicStroke(STROKE_WIDTH);
 
 	private final AreaMutePlugin plugin;
 
@@ -54,7 +56,7 @@ public class AreaMuteOverlay extends Overlay
 		Rectangle worldMapRect = map.getBounds();
 
 		graphics.setClip(worldMapRect);
-		graphics.setStroke(new BasicStroke(STROKE_WIDTH));
+		graphics.setStroke(STROKE);
 
 		Point mp = client.getMouseCanvasPosition();
 		if (worldMapRect.contains(mp.getX(), mp.getY()))
