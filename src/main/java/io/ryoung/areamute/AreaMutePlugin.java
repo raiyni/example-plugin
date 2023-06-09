@@ -99,13 +99,6 @@ public class AreaMutePlugin extends Plugin
 		regions.clear();
 	}
 
-	@Override
-	public void resetConfiguration()
-	{
-		this.regions.clear();
-		config.regions("[]");
-	}
-
 	public void loadRegions()
 	{
 		this.regions.clear();
@@ -164,7 +157,7 @@ public class AreaMutePlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if ("area-mute".equals(event.getGroup()) && "regions".equals(event.getKey()))
+		if ("areamute".equals(event.getGroup()) && "regions".equals(event.getKey()))
 		{
 			this.loadRegions();
 		}
