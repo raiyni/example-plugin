@@ -23,8 +23,8 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
-group = 'com.example'
-version = '1.0-SNAPSHOT'
+group = 'io.ryoung'
+version = '1.0'
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
