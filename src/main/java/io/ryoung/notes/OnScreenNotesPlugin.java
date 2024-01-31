@@ -41,7 +41,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 public class OnScreenNotesPlugin extends Plugin
 {
 	public static final String CONFIG_GROUP = "on-screen-notes";
-	public static final String NOTE_KEY = "note";
+	public static final String NOTE_KEY = "note_";
 
 	public static final String SET_OPTION = "Set Note";
 	public static final String DELETE_OPTION = "Delete Note";
@@ -104,7 +104,7 @@ public class OnScreenNotesPlugin extends Plugin
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes list", null);
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes edit <lt>note id<gt>", null);
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes toggle <lt>note id<gt>", null);
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes delete <lt>note id<gt>", null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes delete <lt>note id|all<gt>", null);
 			return;
 		}
 
@@ -148,6 +148,12 @@ public class OnScreenNotesPlugin extends Plugin
 			case "delete":
 				if (args.length == 2)
 				{
+					if ("all".equals(args[1]))
+					{
+						deleteAllNotes();
+						return;
+					}
+
 					Note note = getByIdx(args[1]);
 					if (note != null)
 					{
@@ -188,10 +194,7 @@ public class OnScreenNotesPlugin extends Plugin
 					.setParent(deleteMenu)
 					.onClick(e ->
 					{
-						for (Note note : Lists.newArrayList(notes))
-						{
-							deleteNote(note);
-						}
+						deleteAllNotes();
 					});
 
 				for (Note note : this.notes)
@@ -250,6 +253,14 @@ public class OnScreenNotesPlugin extends Plugin
 				}
 			}
 
+		}
+	}
+
+	private void deleteAllNotes()
+	{
+		for (Note note : Lists.newArrayList(notes))
+		{
+			deleteNote(note);
 		}
 	}
 
@@ -323,14 +334,9 @@ public class OnScreenNotesPlugin extends Plugin
 		return overlay;
 	}
 
-	public String toKey(Note note)
-	{
-		return NOTE_KEY + "_" + note.getName();
-	}
-
 	public void saveNote(Note note)
 	{
-		configManager.setConfiguration(CONFIG_GROUP, toKey(note), gson.toJson(note));
+		configManager.setConfiguration(CONFIG_GROUP, NOTE_KEY + note.getName(), gson.toJson(note));
 	}
 
 	public Note loadNote(String key)
@@ -339,14 +345,21 @@ public class OnScreenNotesPlugin extends Plugin
 		String value = configManager.getConfiguration(CONFIG_GROUP, split[1]);
 		try
 		{
-			return gson.fromJson(value, Note.class);
+			var note = gson.fromJson(value, Note.class);
+			if (note == null || Strings.isNullOrEmpty(note.getName()))
+			{
+				throw new JsonParseException("can't parse");
+			}
+
+			return note;
 		}
 		catch (JsonParseException e)
 		{
 			log.error("issue parsing key {}: {}", key, value);
 			log.error("resetting key {}", key);
 
-			configManager.unsetConfiguration(CONFIG_GROUP, split[1]);
+			String id = key.substring(NOTE_KEY.length());
+			deleteNote(id);
 		}
 
 		return null;
@@ -418,12 +431,16 @@ public class OnScreenNotesPlugin extends Plugin
 	public void deleteNote(Note note)
 	{
 		removeOverlay(note);
-
-		configManager.unsetConfiguration(CONFIG_GROUP, toKey(note));
-		configManager.unsetConfiguration("runelite", note.getName() + "_preferredPosition");
-		configManager.unsetConfiguration("runelite", note.getName() + "_preferredLocation");
-		configManager.unsetConfiguration("runelite", note.getName() + "_preferredSize");
+		deleteNote(note.getName());
 		this.notes.remove(note);
+	}
+
+	public void deleteNote(String key)
+	{
+		configManager.unsetConfiguration(CONFIG_GROUP, NOTE_KEY  + key);
+		configManager.unsetConfiguration("runelite", key + "_preferredPosition");
+		configManager.unsetConfiguration("runelite", key + "_preferredLocation");
+		configManager.unsetConfiguration("runelite", key + "_preferredSize");
 	}
 
 	public void modifyNote(Note note)
