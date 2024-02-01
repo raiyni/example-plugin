@@ -36,7 +36,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 
 @Slf4j
 @PluginDescriptor(
-	name = "On-screen Notes"
+	name = "On-screen Notes",
+	description = "Use shift click or ::notes to manage"
 )
 public class OnScreenNotesPlugin extends Plugin
 {
@@ -102,9 +103,9 @@ public class OnScreenNotesPlugin extends Plugin
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "Notes command list", null);
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes add", null);
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes list", null);
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes edit <lt>note id<gt>", null);
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes toggle <lt>note id<gt>", null);
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes delete <lt>note id|all<gt>", null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes edit <lt>id<gt>", null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes toggle <lt>id<gt>", null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[notes]", "::notes delete <lt>id | all<gt>", null);
 			return;
 		}
 

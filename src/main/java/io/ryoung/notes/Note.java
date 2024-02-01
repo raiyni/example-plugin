@@ -46,6 +46,6 @@ public class Note implements Comparable<Note>
 	@Override
 	public int compareTo(Note o)
 	{
-		return getMenuName().compareToIgnoreCase(o.getMenuName());
+		return getMenuName().compareToIgnoreCase(o.getMenuName()) * -1;
 	}
 }
