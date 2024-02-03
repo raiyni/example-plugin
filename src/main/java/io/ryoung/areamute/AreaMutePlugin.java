@@ -240,7 +240,7 @@ public class AreaMutePlugin extends Plugin
 //		}
 	}
 
-	@Subscribe
+	@Subscribe(priority = -1)
 	public void onScriptCallbackEvent(ScriptCallbackEvent event)
 	{
 		if (!"chatFilterCheck".equals(event.getEventName()))
