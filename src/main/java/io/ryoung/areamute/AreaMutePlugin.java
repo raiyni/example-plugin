@@ -208,7 +208,7 @@ public class AreaMutePlugin extends Plugin
 	@Subscribe(priority = 999999) // run after ChatMessageManager
 	public void onChatMessage(ChatMessage chatMessage)
 	{
-		String name = Text.toJagexName(Text.removeTags(chatMessage.getName()));
+		String name = Text.removeTags(chatMessage.getName());
 		int messageId = chatMessage.getMessageNode().getId();
 
 		Player actor = null;
