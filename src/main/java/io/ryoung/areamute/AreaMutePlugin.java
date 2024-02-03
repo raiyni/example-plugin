@@ -14,8 +14,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.FriendsChatManager;
 import net.runelite.api.Player;
 import net.runelite.api.Point;
+import net.runelite.api.clan.ClanChannel;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.CommandExecuted;
 import net.runelite.api.events.MenuOpened;
@@ -70,17 +72,6 @@ public class AreaMutePlugin extends Plugin
 		}
 	};
 
-//	private final LinkedHashMap<String, WorldPoint> locCache = new LinkedHashMap<String, WorldPoint>()
-//	{
-//		private static final int MAX_ENTRIES = 200;
-//
-//		@Override
-//		protected boolean removeEldestEntry(Map.Entry<String, WorldPoint> eldest)
-//		{
-//			return size() > MAX_ENTRIES;
-//		}
-//	};
-
 	@Inject
 	private AreaMuteOverlay overlay;
 
@@ -124,11 +115,12 @@ public class AreaMutePlugin extends Plugin
 		saveRegions();
 	}
 
-	public boolean shouldFilter(Player actor)
+	public boolean shouldFilter(Player actor, String name)
 	{
-		if (actor == null)
+		int region = client.getLocalPlayer().getWorldLocation().getRegionID();
+		if (actor != null)
 		{
-			return false;
+			region = actor.getWorldLocation().getRegionID();
 		}
 
 		if (actor == client.getLocalPlayer() && !config.filterSelf())
@@ -136,22 +128,45 @@ public class AreaMutePlugin extends Plugin
 			return false;
 		}
 
-		if (actor.isFriend() && !config.filterFriends())
+		if (!config.filterFriends() && isFriendsChatMember(name))
 		{
 			return false;
 		}
 
-		if (actor.isClanMember() && !config.filterClanMates())
+		if (!config.filterClanMates() && isClanChatMember(name))
 		{
 			return false;
 		}
 
-		if (actor.isFriendsChatMember() && !config.filterFriendChat())
+		if (!config.filterFriendChat() && isFriendsChatMember(name))
 		{
 			return false;
 		}
 
-		return regions.contains(actor.getWorldLocation().getRegionID());
+		return regions.contains(region);
+	}
+
+	private boolean isFriendsChatMember(String name)
+	{
+		FriendsChatManager friendsChatManager = client.getFriendsChatManager();
+		return friendsChatManager != null && friendsChatManager.findByName(name) != null;
+	}
+
+	private boolean isClanChatMember(String name)
+	{
+		ClanChannel clanChannel = client.getClanChannel();
+		if (clanChannel != null && clanChannel.findMember(name) != null)
+		{
+			return true;
+		}
+
+		clanChannel = client.getGuestClanChannel();
+		if (clanChannel != null && clanChannel.findMember(name) != null)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	@Subscribe
@@ -180,7 +195,7 @@ public class AreaMutePlugin extends Plugin
 	@Subscribe(priority = -999999)
 	public void onOverheadTextChanged(OverheadTextChanged event)
 	{
-		if (!(event.getActor() instanceof Player) || !shouldFilter((Player) event.getActor()))
+		if (!(event.getActor() instanceof Player) || !shouldFilter((Player) event.getActor(), event.getActor().getName()))
 		{
 			return;
 		}
@@ -188,24 +203,7 @@ public class AreaMutePlugin extends Plugin
 		event.getActor().setOverheadText(" ");
 	}
 
-//	@Subscribe
-//	public void onGameTick(GameTick event)
-//	{
-//		int regionId = client.getLocalPlayer().getWorldLocation().getRegionID();
-//
-//		if (!regions.contains(regionId))
-//		{
-//			return;
-//		}
-//
-////		for (Player p : client.getCachedPlayers()) {
-////			if (p != null) {
-////				locCache.put(p.getName(), p.getWorldLocation());
-////			}
-////		}
-//	}
-
-	@Subscribe(priority = 999999) // run after ChatMessageManager
+	@Subscribe(priority = 999999)
 	public void onChatMessage(ChatMessage chatMessage)
 	{
 		String name = Text.removeTags(chatMessage.getName());
@@ -227,17 +225,10 @@ public class AreaMutePlugin extends Plugin
 			actor = client.getLocalPlayer();
 		}
 
-		if (shouldFilter(actor))
+		if (shouldFilter(actor, name))
 		{
 			chatCache.put(messageId, true);
 		}
-
-//		if (actor == null) {
-//			WorldPoint p = locCache.get(name);
-//			if (p != null && regions.contains(p.getRegionID())) {
-//				chatCache.put(messageId, true);
-//			}
-//		}
 	}
 
 	@Subscribe(priority = -1)
