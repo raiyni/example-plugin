@@ -16,12 +16,13 @@ import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetType;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -34,7 +35,6 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.ImageCapture;
-import net.runelite.client.util.ImageUploadStyle;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
@@ -104,7 +104,7 @@ public class BankScreenshotPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		if (event.getGroupId() != WidgetID.BANK_GROUP_ID)
+		if (event.getGroupId() != InterfaceID.BANK)
 		{
 			return;
 		}
@@ -146,7 +146,7 @@ public class BankScreenshotPlugin extends Plugin
 			return;
 		}
 
-		Widget parent = client.getWidget(WidgetInfo.BANK_CONTENT_CONTAINER);
+		Widget parent = client.getWidget(ComponentID.BANK_CONTENT_CONTAINER);
 		if (parent == null)
 		{
 			return;
@@ -179,9 +179,8 @@ public class BankScreenshotPlugin extends Plugin
 		overrideBounds.clear();
 		client.getWidgetSpriteCache().reset();
 
-
-		Widget container = client.getWidget(WidgetInfo.BANK_CONTAINER);
-		Widget itemContainer = client.getWidget(WidgetInfo.BANK_ITEM_CONTAINER);
+		Widget container = client.getWidget(ComponentID.BANK_CONTAINER);
+		Widget itemContainer = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
 		if (container == null || container.isHidden() || itemContainer == null || itemContainer.isHidden())
 		{
 			return;
@@ -236,16 +235,15 @@ public class BankScreenshotPlugin extends Plugin
 			}
 		}
 
-		Widget content = client.getWidget(WidgetInfo.BANK_CONTENT_CONTAINER);
+		Widget content = client.getWidget(ComponentID.BANK_CONTENT_CONTAINER);
 		Graphics contentGraphics;
-
 
 		int itemsOffset = 0;
 		if (config.info() == BankScreenshotConfig.DisplayMode.FRAME)
 		{
 			drawFrame(graphics, width, height);
 
-			Widget titleBar = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
+			Widget titleBar = client.getWidget(ComponentID.BANK_TITLE_BAR);
 
 			Graphics titleGraphics = graphics.create(content.getOriginalX(), 0, titleBar.getWidth(), titleBar.getHeight());
 			titleGraphics.setClip(0, 0, titleBar.getWidth(), titleBar.getHeight());
@@ -258,36 +256,37 @@ public class BankScreenshotPlugin extends Plugin
 			int bottomBarY = 0;
 			int scrollbarY = 0;
 
-			for (int i = WidgetInfo.BANK_ITEM_COUNT_TOP.getChildId(); i < WidgetInfo.BANK_ITEM_COUNT_TOP.getChildId() + 3; i++)
+			int itemCountId = WidgetUtil.componentToId(ComponentID.BANK_ITEM_COUNT_TOP);
+			for (int i = itemCountId; i < itemCountId + 3; i++)
 			{
 				Widget child = client.getWidget(12, i);
 				drawChildren(graphics, child, child.getRelativeX(), child.getRelativeY());
 			}
 
-			Widget settingsBtn = client.getWidget(WidgetInfo.BANK_SETTINGS_BUTTON);
+			Widget settingsBtn = client.getWidget(ComponentID.BANK_SETTINGS_BUTTON);
 			drawChildren(graphics, settingsBtn, settingsBtn.getRelativeX(), settingsBtn.getRelativeY());
 
-			Widget equipBtn = client.getWidget(WidgetInfo.BANK_EQUIPMENT_BUTTON);
+			Widget equipBtn = client.getWidget(ComponentID.BANK_EQUIPMENT_BUTTON);
 			drawChildren(graphics, equipBtn, equipBtn.getRelativeX(), equipBtn.getRelativeY());
 
-			Widget tutorialBtn = client.getWidget(WidgetInfo.BANK_TUTORIAL_BUTTON);
+			Widget tutorialBtn = client.getWidget(ComponentID.BANK_TUTORIAL_BUTTON);
 			drawChildren(graphics, tutorialBtn, tutorialBtn.getRelativeX(), tutorialBtn.getRelativeY());
 
 			for (Widget child : content.getStaticChildren())
 			{
-				if (child.getId() == WidgetInfo.BANK_ITEM_CONTAINER.getId())
+				if (child.getId() == ComponentID.BANK_ITEM_CONTAINER)
 				{
 					itemsOffset = child.getRelativeY();
 				}
-				else if (child.getId() == WidgetInfo.BANK_TAB_CONTAINER.getId())
+				else if (child.getId() == ComponentID.BANK_TAB_CONTAINER)
 				{
 					drawChildren(contentGraphics, child, child.getRelativeX(), child.getRelativeY());
 				}
-				else if (child.getId() == WidgetInfo.BANK_INCINERATOR.getId())
+				else if (child.getId() == ComponentID.BANK_INCINERATOR)
 				{
 					// do nothing
 				}
-				else if (child.getId() == WidgetInfo.BANK_SCROLLBAR.getId())
+				else if (child.getId() == ComponentID.BANK_SCROLLBAR)
 				{
 					scrollbarY = child.getRelativeY();
 				}
@@ -302,7 +301,7 @@ public class BankScreenshotPlugin extends Plugin
 		}
 		else if (config.info() == BankScreenshotConfig.DisplayMode.TITLE)
 		{
-			Widget titleBar = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
+			Widget titleBar = client.getWidget(ComponentID.BANK_TITLE_BAR);
 			Graphics titleGraphics = graphics.create(0, 0, content.getWidth(), titleBar.getHeight());
 			overrideBounds.put(titleBar.getId() | titleBar.getParentId(), new Rectangle(0, 5, content.getWidth(), titleBar.getHeight()));
 			drawWidget(titleGraphics, titleBar, 0, 5);
@@ -317,12 +316,12 @@ public class BankScreenshotPlugin extends Plugin
 		}
 
 
-		Widget items = client.getWidget(WidgetInfo.BANK_ITEM_CONTAINER);
+		Widget items = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
 		overrideBounds.put(items.getId() | items.getParentId(), new Rectangle(items.getRelativeX(), itemsOffset, items.getWidth(), height));
 		drawChildren(contentGraphics, items, items.getRelativeX(), itemsOffset);
 
 		contentGraphics.dispose();
-		imageCapture.takeScreenshot(screenshot, "bankscreenshot", "bank", true, ImageUploadStyle.NEITHER);
+		imageCapture.saveScreenshot(screenshot, "bankscreenshot", "bank", true, true);
 	}
 
 	private void drawFrame(Graphics graphics, int width, int height)
@@ -493,7 +492,7 @@ public class BankScreenshotPlugin extends Plugin
 		{
 			BufferedImage image;
 			ItemComposition composition = itemManager.getItemComposition(child.getItemId());
-			if (child.getId() == WidgetInfo.BANK_TAB_CONTAINER.getId())
+			if (child.getId() == ComponentID.BANK_TAB_CONTAINER)
 			{
 				image = itemManager.getImage(itemManager.canonicalize(child.getItemId()), 1, false);
 			}
