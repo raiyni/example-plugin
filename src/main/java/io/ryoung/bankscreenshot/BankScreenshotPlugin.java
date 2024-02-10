@@ -14,10 +14,10 @@ import net.runelite.api.Client;
 import net.runelite.api.FontID;
 import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
+import net.runelite.api.ScriptID;
 import net.runelite.api.SpritePixels;
-import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
 import net.runelite.api.widgets.Widget;
@@ -94,7 +94,6 @@ public class BankScreenshotPlugin extends Plugin
 		clientThread.invoke(this::hideButton);
 	}
 
-
 	@Provides
 	BankScreenshotConfig provideConfig(ConfigManager configManager)
 	{
@@ -102,14 +101,23 @@ public class BankScreenshotPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onWidgetLoaded(WidgetLoaded event)
+	public void onScriptPostFired(ScriptPostFired event)
 	{
-		if (event.getGroupId() != InterfaceID.BANK)
+		if (event.getScriptId() == ScriptID.BANKMAIN_INIT)
 		{
-			return;
+			createButton();
+		} else if (event.getScriptId() == 3275)
+		{
+			Widget itemContainer = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
+			if (itemContainer == null || itemContainer.isHidden())
+			{
+				hideButton();
+			}
+			else
+			{
+				createButton();
+			}
 		}
-
-		createButton();
 	}
 
 	@Subscribe
@@ -146,7 +154,7 @@ public class BankScreenshotPlugin extends Plugin
 			return;
 		}
 
-		Widget parent = client.getWidget(ComponentID.BANK_CONTENT_CONTAINER);
+		Widget parent = client.getWidget(ComponentID.BANK_CONTAINER + 1);
 		if (parent == null)
 		{
 			return;
@@ -158,7 +166,7 @@ public class BankScreenshotPlugin extends Plugin
 		button.setOriginalHeight(20);
 		button.setOriginalWidth(20);
 		button.setOriginalX(434);
-		button.setOriginalY(48);
+		button.setOriginalY(75);
 		button.setSpriteId(573);
 		button.setAction(0, "Screenshot");
 		button.setOnOpListener((JavaScriptCallback) (e) -> clientThread.invokeLater(this::screenshot));
