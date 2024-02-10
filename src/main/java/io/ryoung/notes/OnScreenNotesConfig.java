@@ -1,8 +1,13 @@
 package io.ryoung.notes;
 
+import java.awt.Color;
+import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.JagexColors;
+import net.runelite.client.ui.overlay.components.ComponentConstants;
 
 @ConfigGroup(OnScreenNotesPlugin.CONFIG_GROUP)
 public interface OnScreenNotesConfig extends Config
@@ -46,5 +51,36 @@ public interface OnScreenNotesConfig extends Config
 	default boolean editMenu()
 	{
 		return false;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "defaultBackgroundColor",
+		name = "Default Background",
+		description = "Default Background Color"
+	)
+	default Color defaultBackground()
+	{
+		return ComponentConstants.STANDARD_BACKGROUND_COLOR;
+	}
+
+	@ConfigItem(
+		keyName = "defaultTextColor",
+		name = "Default Text Color",
+		description = "Default Text Color"
+	)
+	default Color defaultTextColor()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "defaultTitleColor",
+		name = "Default Title Color",
+		description = "Default Title Color"
+	)
+	default Color defaultTitleColor()
+	{
+		return ColorScheme.BRAND_ORANGE;
 	}
 }

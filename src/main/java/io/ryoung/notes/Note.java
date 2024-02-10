@@ -2,6 +2,7 @@ package io.ryoung.notes;
 
 import com.google.common.base.MoreObjects;
 import com.google.gson.annotations.SerializedName;
+import java.awt.Color;
 import joptsimple.internal.Strings;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,18 @@ public class Note implements Comparable<Note>
 	@EqualsAndHashCode.Exclude
 	@SerializedName("b")
 	private String body;
+
+	@EqualsAndHashCode.Exclude
+	@SerializedName("bc")
+	private Color backgroundColor;
+
+	@EqualsAndHashCode.Exclude
+	@SerializedName("tc")
+	private Color textColor;
+
+	@EqualsAndHashCode.Exclude
+	@SerializedName("tic")
+	private Color titleColor;
 
 	public String getMenuName()
 	{

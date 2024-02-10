@@ -1,22 +1,19 @@
 package io.ryoung.notes;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
 import static net.runelite.api.MenuAction.RUNELITE_OVERLAY;
-import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
-import net.runelite.client.ui.ColorScheme;
-import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
@@ -27,9 +24,12 @@ public class NoteOverlay extends OverlayPanel
 {
 	private static final Splitter LINE_SPLITTER = Splitter.on("<b>").trimResults();
 	private final OnScreenNotesPlugin plugin;
+	private final OnScreenNotesConfig config;
 
 	private TitleComponent titleComponent;
 	private List<BodyComponent> body = new ArrayList<>();
+
+	private String oldName;
 
 	@Setter
 	@Getter
@@ -37,11 +37,13 @@ public class NoteOverlay extends OverlayPanel
 
 	NoteOverlay(
 		OnScreenNotesPlugin onScreenNotesPlugin,
+		OnScreenNotesConfig config,
 		Note note
 	)
 	{
 		super(onScreenNotesPlugin);
 		this.plugin = onScreenNotesPlugin;
+		this.config = config;
 
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.HIGH);
@@ -50,12 +52,9 @@ public class NoteOverlay extends OverlayPanel
 		panelComponent.setGap(new Point(0, 2));
 
 //		addMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "Notes overlay");
-		addMenuEntry(RUNELITE_OVERLAY, OnScreenNotesPlugin.SET_OPTION, "Title", (entry) -> plugin.changeTitle(this.note));
-		addMenuEntry(RUNELITE_OVERLAY, OnScreenNotesPlugin.SET_OPTION, "Body", (entry) -> plugin.changeBody(this.note));
-		addMenuEntry(RUNELITE_OVERLAY, OnScreenNotesPlugin.HIDE_OPTION, "", (entry) -> plugin.toggleNote(this.note));
-		addMenuEntry(RUNELITE_OVERLAY, OnScreenNotesPlugin.DELETE_OPTION, "", (entry) -> plugin.deleteNote(this.note));
 
 		this.note = note;
+		this.oldName = note.getMenuName();
 		reload();
 	}
 
@@ -81,8 +80,14 @@ public class NoteOverlay extends OverlayPanel
 
 	public void reload()
 	{
+		removeMenuEntries();
+		addMenuEntries();
+
 		setTitle(note.getTitle());
 		setBody(note.getBody());
+
+		this.panelComponent.setBackgroundColor(MoreObjects.firstNonNull(note.getBackgroundColor(), config.defaultBackground()));
+		this.oldName = note.getMenuName();
 	}
 
 	private void setTitle(String title)
@@ -95,7 +100,7 @@ public class NoteOverlay extends OverlayPanel
 		{
 			titleComponent = TitleComponent.builder()
 				.text(title)
-				.color(ColorScheme.BRAND_ORANGE)
+				.color(MoreObjects.firstNonNull(note.getTitleColor(), config.defaultTitleColor()))
 				.build();
 		}
 	}
@@ -111,8 +116,24 @@ public class NoteOverlay extends OverlayPanel
 			{
 				this.body.add(BodyComponent.builder()
 					.body(line)
+					.color(MoreObjects.firstNonNull(note.getTextColor(), config.defaultTextColor()))
 					.build());
 			}
 		}
+	}
+
+	private void addMenuEntries()
+	{
+
+		addMenuEntry(RUNELITE_OVERLAY,"Edit Note", note.getMenuName());
+		addMenuEntry(RUNELITE_OVERLAY,"Hide Note", note.getMenuName());
+		addMenuEntry(RUNELITE_OVERLAY,"Delete Note", note.getMenuName());
+	}
+
+	private void removeMenuEntries()
+	{
+		removeMenuEntry(RUNELITE_OVERLAY,"Edit Note", this.oldName);
+		removeMenuEntry(RUNELITE_OVERLAY,"Hide Note", this.oldName);
+		removeMenuEntry(RUNELITE_OVERLAY,"Delete Note", this.oldName);
 	}
 }
