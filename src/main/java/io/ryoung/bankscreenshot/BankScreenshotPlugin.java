@@ -329,7 +329,7 @@ public class BankScreenshotPlugin extends Plugin
 		drawChildren(contentGraphics, items, items.getRelativeX(), itemsOffset);
 
 		contentGraphics.dispose();
-		imageCapture.saveScreenshot(screenshot, "bankscreenshot", "bank", true, true);
+		imageCapture.saveScreenshot(screenshot, "bankscreenshot", "bank", config.notification(), config.copyToClipboard());
 	}
 
 	private void drawFrame(Graphics graphics, int width, int height)

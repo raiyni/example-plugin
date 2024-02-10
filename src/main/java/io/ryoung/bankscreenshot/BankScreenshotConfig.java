@@ -67,4 +67,24 @@ public interface BankScreenshotConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "copyToClipboard",
+		name = "Copy to Clipboard",
+		description = "Copy screenshot to your clipboard"
+	)
+	default boolean copyToClipboard()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "notification",
+		name = "notification",
+		description = "Notify on screenshot taken"
+	)
+	default boolean notification()
+	{
+		return true;
+	}
 }
