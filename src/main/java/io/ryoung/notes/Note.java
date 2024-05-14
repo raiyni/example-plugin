@@ -1,9 +1,9 @@
 package io.ryoung.notes;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import java.awt.Color;
-import joptsimple.internal.Strings;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
