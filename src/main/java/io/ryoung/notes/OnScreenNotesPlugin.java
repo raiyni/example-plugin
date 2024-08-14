@@ -234,7 +234,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.deleteMenu() && !notes.isEmpty())
 			{
-				MenuEntry deleteMenu = client.getMenu()
+				var deleteMenu = client.getMenu()
 					.createMenuEntry(-2)
 					.setOption("Delete")
 					.setTarget("Note")
@@ -265,7 +265,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.editMenu() && !notes.isEmpty())
 			{
-				MenuEntry toggleMenu = client.getMenu()
+				var toggleMenu = client.getMenu()
 					.createMenuEntry(-2)
 					.setOption("Edit")
 					.setTarget("Note")
@@ -287,7 +287,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.toggleMenu() && !notes.isEmpty())
 			{
-				MenuEntry toggleMenu = client.getMenu()
+				var toggleMenu = client.getMenu()
 					.createMenuEntry(-2)
 					.setOption("Toggle")
 					.setTarget("Note")
