@@ -238,7 +238,7 @@ public class OnScreenNotesPlugin extends Plugin
 					.createMenuEntry(-2)
 					.setOption("Delete")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU)
+					.setType(MenuAction.RUNELITE)
 					.createSubMenu();
 
 				deleteMenu.createMenuEntry(-3)
@@ -269,7 +269,7 @@ public class OnScreenNotesPlugin extends Plugin
 					.createMenuEntry(-2)
 					.setOption("Edit")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU)
+					.setType(MenuAction.RUNELITE)
 					.createSubMenu();
 
 				for (Note note : this.notes)
@@ -291,7 +291,7 @@ public class OnScreenNotesPlugin extends Plugin
 					.createMenuEntry(-2)
 					.setOption("Toggle")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU)
+					.setType(MenuAction.RUNELITE)
 					.createSubMenu();
 
 				for (Note note : this.notes)
