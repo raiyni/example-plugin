@@ -222,7 +222,8 @@ public class OnScreenNotesPlugin extends Plugin
 		final boolean hotKeyPressed = client.isKeyPressed(KeyCode.KC_SHIFT);
 		if (hotKeyPressed && config.useKeybinds() && event.getOption().equals(WALK_HERE))
 		{
-			client.createMenuEntry(-1)
+			client.getMenu()
+				.createMenuEntry(-1)
 				.setOption("Add")
 				.setTarget("Note")
 				.setType(MenuAction.RUNELITE)
@@ -233,16 +234,17 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.deleteMenu() && !notes.isEmpty())
 			{
-				MenuEntry deleteMenu = client.createMenuEntry(-2)
+				MenuEntry deleteMenu = client.getMenu()
+					.createMenuEntry(-2)
 					.setOption("Delete")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU);
+					.setType(MenuAction.RUNELITE_SUBMENU)
+					.createSubMenu();
 
-				client.createMenuEntry(-3)
+				deleteMenu.createMenuEntry(-3)
 					.setOption("Delete")
 					.setTarget(JagexColors.MENU_TARGET_TAG + "All notes")
 					.setType(MenuAction.RUNELITE)
-					.setParent(deleteMenu)
 					.onClick(e ->
 					{
 						deleteAllNotes();
@@ -250,11 +252,10 @@ public class OnScreenNotesPlugin extends Plugin
 
 				for (Note note : this.notes)
 				{
-					client.createMenuEntry(-3)
+					deleteMenu.createMenuEntry(-3)
 						.setOption("Delete")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
-						.setParent(deleteMenu)
 						.onClick(e ->
 						{
 							deleteNote(note);
@@ -264,18 +265,19 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.editMenu() && !notes.isEmpty())
 			{
-				MenuEntry toggleMenu = client.createMenuEntry(-2)
+				MenuEntry toggleMenu = client.getMenu()
+					.createMenuEntry(-2)
 					.setOption("Edit")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU);
+					.setType(MenuAction.RUNELITE_SUBMENU)
+					.createSubMenu();
 
 				for (Note note : this.notes)
 				{
-					client.createMenuEntry(-2)
+					toggleMenu.createMenuEntry(-2)
 						.setOption("Edit")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
-						.setParent(toggleMenu)
 						.onClick(e ->
 						{
 							editNote(note);
@@ -285,18 +287,19 @@ public class OnScreenNotesPlugin extends Plugin
 
 			if (config.toggleMenu() && !notes.isEmpty())
 			{
-				MenuEntry toggleMenu = client.createMenuEntry(-2)
+				MenuEntry toggleMenu = client.getMenu()
+					.createMenuEntry(-2)
 					.setOption("Toggle")
 					.setTarget("Note")
-					.setType(MenuAction.RUNELITE_SUBMENU);
+					.setType(MenuAction.RUNELITE_SUBMENU)
+					.createSubMenu();
 
 				for (Note note : this.notes)
 				{
-					client.createMenuEntry(-2)
+					toggleMenu.createMenuEntry(-2)
 						.setOption(note.isVisible() ? "Hide" : "Show")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
-						.setParent(toggleMenu)
 						.onClick(e ->
 						{
 							toggleNote(note);
