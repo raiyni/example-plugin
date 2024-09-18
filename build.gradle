@@ -10,7 +10,7 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = 'version.release'
+def runeLiteVersion = 'latest.release'
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
@@ -24,7 +24,7 @@ dependencies {
 }
 
 group = 'io.ryoung'
-version = '1.0'
+version = '1.1'
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'

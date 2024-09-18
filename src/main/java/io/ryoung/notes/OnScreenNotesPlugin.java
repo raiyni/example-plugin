@@ -241,7 +241,7 @@ public class OnScreenNotesPlugin extends Plugin
 					.setType(MenuAction.RUNELITE)
 					.createSubMenu();
 
-				deleteMenu.createMenuEntry(-3)
+				deleteMenu.createMenuEntry(-1)
 					.setOption("Delete")
 					.setTarget(JagexColors.MENU_TARGET_TAG + "All notes")
 					.setType(MenuAction.RUNELITE)
@@ -252,7 +252,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 				for (Note note : this.notes)
 				{
-					deleteMenu.createMenuEntry(-3)
+					deleteMenu.createMenuEntry(-1)
 						.setOption("Delete")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
@@ -274,7 +274,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 				for (Note note : this.notes)
 				{
-					toggleMenu.createMenuEntry(-2)
+					toggleMenu.createMenuEntry(-1)
 						.setOption("Edit")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
@@ -296,7 +296,7 @@ public class OnScreenNotesPlugin extends Plugin
 
 				for (Note note : this.notes)
 				{
-					toggleMenu.createMenuEntry(-2)
+					toggleMenu.createMenuEntry(-1)
 						.setOption(note.isVisible() ? "Hide" : "Show")
 						.setTarget(JagexColors.MENU_TARGET_TAG + note.getMenuName())
 						.setType(MenuAction.RUNELITE)
