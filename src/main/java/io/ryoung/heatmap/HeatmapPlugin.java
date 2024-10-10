@@ -1,7 +1,6 @@
 package io.ryoung.heatmap;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Ints;
 import com.google.inject.Provides;
 import java.util.Arrays;
 import java.util.List;
@@ -17,11 +16,10 @@ import net.runelite.api.MenuEntry;
 import net.runelite.api.ScriptID;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.ScriptPostFired;
+import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -129,19 +127,19 @@ public class HeatmapPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		if (event.getType() != MenuAction.CC_OP.getId() || !event.getOption().equals("Show menu")
-			|| (event.getActionParam1() >> 16) != WidgetID.BANK_GROUP_ID)
+			|| (event.getActionParam1() >> 16) != InterfaceID.BANK)
 		{
 			return;
 		}
 
-		client.createMenuEntry(-1)
+		client.getMenu().createMenuEntry(-1)
 			.setOption("Toggle GE Heatmap")
 			.setTarget("")
 			.setType(MenuAction.RUNELITE)
 			.onClick(this::onClick)
 			.setDeprioritized(true);
 
-		client.createMenuEntry(-1)
+		client.getMenu().createMenuEntry(-1)
 			.setOption("Toggle HA Heatmap")
 			.setTarget("")
 			.setType(MenuAction.RUNELITE)
@@ -151,7 +149,7 @@ public class HeatmapPlugin extends Plugin
 
 		if (config.showTutorial())
 		{
-			client.createMenuEntry(-1)
+			client.getMenu().createMenuEntry(-1)
 				.setOption("Disable tutorial")
 				.setTarget("")
 				.setType(MenuAction.WIDGET_FIFTH_OPTION)
@@ -211,7 +209,7 @@ public class HeatmapPlugin extends Plugin
 
 	boolean isBankVisible()
 	{
-		Widget bank = client.getWidget(WidgetInfo.BANK_CONTAINER);
+		Widget bank = client.getWidget(ComponentID.BANK_CONTAINER);
 		return config.showTutorial() && bank != null && !bank.isHidden();
 	}
 }
