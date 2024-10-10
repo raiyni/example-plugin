@@ -50,6 +50,10 @@ public class HeatmapCalculation
 	void calculate(Item[] items)
 	{
 		heatmapItems.clear();
+		if (items == null)
+		{
+			return;
+		}
 
 		for (final Item item : items)
 		{

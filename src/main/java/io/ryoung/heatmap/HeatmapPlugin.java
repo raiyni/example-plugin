@@ -1,6 +1,7 @@
 package io.ryoung.heatmap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 import com.google.inject.Provides;
 import java.util.Arrays;
 import java.util.List;
@@ -187,7 +188,7 @@ public class HeatmapPlugin extends Plugin
 		final Item[] items = container.getItems();
 		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 
-		if (currentTab > 0)
+		if (currentTab > 0 && currentTab < 14)
 		{
 			int startIndex = 0;
 
