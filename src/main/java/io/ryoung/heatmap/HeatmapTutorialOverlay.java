@@ -7,8 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
@@ -37,7 +37,7 @@ public class HeatmapTutorialOverlay extends OverlayPanel
 			return null;
 		}
 
-		Widget button = client.getWidget(WidgetInfo.BANK_SETTINGS_BUTTON);
+		Widget button = client.getWidget(ComponentID.BANK_SETTINGS_BUTTON);
 		if (button == null || button.isSelfHidden() || button.getDynamicChildren()[0].getSpriteId() != 195)
 		{
 			return null;

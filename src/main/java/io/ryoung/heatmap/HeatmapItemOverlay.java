@@ -36,7 +36,7 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import net.runelite.api.ItemComposition;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
@@ -69,7 +69,7 @@ public class HeatmapItemOverlay extends WidgetItemOverlay
 	{
 		HeatmapItem hItem = plugin.getHeatmapItem(itemId);
 		HEATMAP_MODE mode = plugin.getHeatmapMode();
-		if (hItem == null || itemWidget.getWidget().getParentId() != WidgetInfo.BANK_ITEM_CONTAINER.getId()
+		if (hItem == null || itemWidget.getWidget().getParentId() != ComponentID.BANK_ITEM_CONTAINER
 			|| mode == HEATMAP_MODE.NULL
 			|| (mode == HEATMAP_MODE.GE && hItem.getGePrice() < 1) || (mode == HEATMAP_MODE.HA && hItem.getAlchPrice() < 1))
 		{
