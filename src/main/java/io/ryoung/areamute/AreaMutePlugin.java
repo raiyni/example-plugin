@@ -241,8 +241,8 @@ public class AreaMutePlugin extends Plugin
 
 		int[] intStack = client.getIntStack();
 		int intStackSize = client.getIntStackSize();
-		String[] stringStack = client.getStringStack();
-		int stringStackSize = client.getStringStackSize();
+		Object[] objectStack = client.getObjectStack();
+		int objectStackSize = client.getObjectStackSize();
 
 		final int messageType = intStack[intStackSize - 2];
 		final int messageId = intStack[intStackSize - 1];
@@ -256,7 +256,7 @@ public class AreaMutePlugin extends Plugin
 				if (chatCache.containsKey(messageId))
 				{
 					intStack[intStackSize - 3] = 0;
-					stringStack[stringStackSize - 1] = null;
+					objectStack[objectStackSize - 1] = null;
 				}
 		}
 	}
