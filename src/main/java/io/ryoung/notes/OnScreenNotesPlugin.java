@@ -7,7 +7,7 @@ import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.inject.Provides;
-import java.applet.Applet;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -548,7 +548,7 @@ public class OnScreenNotesPlugin extends Plugin
 			.option("1. Title", () ->
 				SwingUtilities.invokeLater(() ->
 				{
-					var win = SwingUtilities.windowForComponent((Applet) client);
+					var win = SwingUtilities.windowForComponent((Component) client);
 					RuneliteColorPicker colorPicker = colorPickerManager.create(win,
 						MoreObjects.firstNonNull(note.getTitleColor(), config.defaultTitleColor()), "Title Color: " + note.getMenuName(), true);
 					colorPicker.setOnClose(c ->
@@ -570,7 +570,7 @@ public class OnScreenNotesPlugin extends Plugin
 			.option("2. Text", () ->
 				SwingUtilities.invokeLater(() ->
 				{
-					var win = SwingUtilities.windowForComponent((Applet) client);
+					var win = SwingUtilities.windowForComponent((Component) client);
 					RuneliteColorPicker colorPicker = colorPickerManager.create(win,
 						MoreObjects.firstNonNull(note.getTextColor(), config.defaultTextColor()), "Text Color: " + note.getMenuName(), true);
 					colorPicker.setOnClose(c ->
@@ -592,7 +592,7 @@ public class OnScreenNotesPlugin extends Plugin
 			.option("3. Background", () ->
 				SwingUtilities.invokeLater(() ->
 				{
-					var win = SwingUtilities.windowForComponent((Applet) client);
+					var win = SwingUtilities.windowForComponent((Component) client);
 					RuneliteColorPicker colorPicker = colorPickerManager.create(win,
 						MoreObjects.firstNonNull(note.getBackgroundColor(), config.defaultBackground()), "Background Color: " + note.getMenuName(), false);
 					colorPicker.setOnClose(c ->
