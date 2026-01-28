@@ -295,18 +295,30 @@ public class BankScreenshotPlugin extends Plugin
 				{
 					drawChildren(contentGraphics, child, child.getRelativeX(), child.getRelativeY());
 				}
-				else if (child.getId() == InterfaceID.Bankmain.INCINERATOR_TARGET)
+				else if (child.getId() == InterfaceID.Bankmain.INCINERATOR_TARGET && !child.isHidden())
 				{
-					// do nothing
+					// todo: find out where the 1 px padding comes from
+					drawChildren(contentGraphics, child, child.getRelativeX(), contentGraphics.getClipBounds().height - child.getOriginalY() - child.getHeight() - 1);
+				}
+				else if (child.getId() == InterfaceID.Bankmain.HORIZONTAL_LINE && !child.isHidden())
+				{
+					// todo: find out where the 1 px padding comes from
+					drawWidget(contentGraphics, child, 0, contentGraphics.getClipBounds().height - child.getOriginalY() - 1);
 				}
 				else if (child.getId() == InterfaceID.Bankmain.SCROLLBAR)
 				{
 					scrollbarY = child.getRelativeY();
 				}
-				else if (!child.isHidden())
+				else if (child.getId() == InterfaceID.Bankmain.BOTTOM)
 				{
-					bottomBarY = contentGraphics.getClipBounds().height - child.getHeight();
-					drawChildren(contentGraphics, child, child.getRelativeX(), contentGraphics.getClipBounds().height - child.getHeight());
+					// todo: find out where the 2 px padding comes from
+					bottomBarY = contentGraphics.getClipBounds().height - child.getHeight() - 2;
+					drawChildren(contentGraphics, child, child.getRelativeX(), bottomBarY);
+				}
+				else if (child.getId() == InterfaceID.Bankmain.STORAGE_POPUP_TAB && !child.isHidden())
+				{
+					// todo: find out where the 1 px padding comes from
+					drawChildren(contentGraphics, child, child.getRelativeX(), contentGraphics.getClipBounds().height - child.getOriginalY() - child.getHeight() - 1);
 				}
 			}
 
@@ -595,7 +607,26 @@ public class BankScreenshotPlugin extends Plugin
 		else if (child.getType() == WidgetType.LINE)
 		{
 			graphics.setColor(new Color(child.getTextColor()));
-			graphics.drawLine(child.getRelativeX(), child.getRelativeY(), child.getRelativeX() + child.getWidth(), child.getRelativeY());
+			int cx = child.getOriginalX();
+			if (child.getXPositionMode() == 2)
+			{
+				cx = x;
+			}
+
+			int cy = child.getOriginalY();
+			if (child.getYPositionMode() == 2)
+			{
+				cy = y;
+			}
+
+			if (child.getWidth() > 0)
+			{
+				graphics.drawLine(cx, cy, cx + child.getWidth(), cy);
+			}
+			else
+			{
+				graphics.drawLine(cx, cy, cx, cy + child.getHeight());
+			}
 		}
 	}
 
