@@ -8,17 +8,16 @@ import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.ScriptID;
-import net.runelite.api.Varbits;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.ScriptPostFired;
-import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -41,15 +40,15 @@ public class HeatmapPlugin extends Plugin
 	}
 
 	private static final List<Integer> TAB_VARBITS = ImmutableList.of(
-		Varbits.BANK_TAB_ONE_COUNT,
-		Varbits.BANK_TAB_TWO_COUNT,
-		Varbits.BANK_TAB_THREE_COUNT,
-		Varbits.BANK_TAB_FOUR_COUNT,
-		Varbits.BANK_TAB_FIVE_COUNT,
-		Varbits.BANK_TAB_SIX_COUNT,
-		Varbits.BANK_TAB_SEVEN_COUNT,
-		Varbits.BANK_TAB_EIGHT_COUNT,
-		Varbits.BANK_TAB_NINE_COUNT
+		VarbitID.BANK_TAB_1,
+		VarbitID.BANK_TAB_2,
+		VarbitID.BANK_TAB_3,
+		VarbitID.BANK_TAB_4,
+		VarbitID.BANK_TAB_5,
+		VarbitID.BANK_TAB_6,
+		VarbitID.BANK_TAB_7,
+		VarbitID.BANK_TAB_8,
+		VarbitID.BANK_TAB_9
 	);
 
 	@Inject
@@ -127,31 +126,30 @@ public class HeatmapPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		if (event.getType() != MenuAction.CC_OP.getId() || !event.getOption().equals("Show menu")
-			|| (event.getActionParam1() >> 16) != InterfaceID.BANK)
+			|| (event.getActionParam1() >> 16) != InterfaceID.BANKMAIN)
 		{
 			return;
 		}
 
 		client.getMenu().createMenuEntry(-1)
-			.setOption("Toggle GE Heatmap")
-			.setTarget("")
+			.setOption("Toggle")
+			.setTarget("GE Heatmap")
 			.setType(MenuAction.RUNELITE)
 			.onClick(this::onClick)
 			.setDeprioritized(true);
 
 		client.getMenu().createMenuEntry(-1)
-			.setOption("Toggle HA Heatmap")
-			.setTarget("")
+			.setOption("Toggle")
+			.setTarget("HA Heatmap")
 			.setType(MenuAction.RUNELITE)
 			.onClick(this::onClick)
 			.setDeprioritized(true);
 
-
 		if (config.showTutorial())
 		{
 			client.getMenu().createMenuEntry(-1)
-				.setOption("Disable tutorial")
-				.setTarget("")
+				.setOption("")
+				.setTarget("Disable tutorial")
 				.setType(MenuAction.WIDGET_FIFTH_OPTION)
 				.setIdentifier(event.getIdentifier())
 				.setParam0(event.getActionParam0())
@@ -163,7 +161,7 @@ public class HeatmapPlugin extends Plugin
 
 	public void onClick(MenuEntry e)
 	{
-		HEATMAP_MODE mode = e.getOption().equals("Toggle GE Heatmap") ? HEATMAP_MODE.GE : HEATMAP_MODE.HA;
+		HEATMAP_MODE mode = e.getTarget().equals("GE Heatmap") ? HEATMAP_MODE.GE : HEATMAP_MODE.HA;
 		if (mode == heatmapMode)
 		{
 			heatmapMode = HEATMAP_MODE.NULL;
@@ -184,7 +182,7 @@ public class HeatmapPlugin extends Plugin
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
+		int currentTab = client.getVarbitValue(VarbitID.BANK_TAB_DISPLAY);
 
 		if (currentTab > 0 && currentTab < 14)
 		{
@@ -209,7 +207,7 @@ public class HeatmapPlugin extends Plugin
 
 	boolean isBankVisible()
 	{
-		Widget bank = client.getWidget(ComponentID.BANK_CONTAINER);
+		Widget bank = client.getWidget(InterfaceID.Bankmain.ITEMS_CONTAINER);
 		return config.showTutorial() && bank != null && !bank.isHidden();
 	}
 }

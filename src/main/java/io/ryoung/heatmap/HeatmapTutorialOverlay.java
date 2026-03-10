@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -37,13 +37,14 @@ public class HeatmapTutorialOverlay extends OverlayPanel
 			return null;
 		}
 
-		Widget button = client.getWidget(ComponentID.BANK_SETTINGS_BUTTON);
-		if (button == null || button.isSelfHidden() || button.getDynamicChildren()[0].getSpriteId() != 195)
+		Widget button = client.getWidget(InterfaceID.Bankmain.MENU_BUTTON);
+		if (button == null || button.isSelfHidden())
 		{
 			return null;
 		}
 
 		Rectangle bounds = button.getBounds();
+		var location = button.getCanvasLocation();
 
 		graphics.setColor(ColorScheme.BRAND_ORANGE);
 		graphics.setStroke(new BasicStroke(2));
@@ -53,12 +54,12 @@ public class HeatmapTutorialOverlay extends OverlayPanel
 		int width = font.stringWidth("Right click this button");
 
 		graphics.setColor(ColorScheme.DARKER_GRAY_COLOR);
-		graphics.fillRect(bounds.x + bounds.width + 2, bounds.y - 15, width + 6, 30);
+		graphics.fillRect(bounds.x + bounds.width + 2, bounds.y - 5, width + 6, 30);
 
 
 		graphics.setColor(ColorScheme.BRAND_ORANGE);
-		graphics.drawString("Right click this button", bounds.x + bounds.width + 5, bounds.y);
-		graphics.drawString("for Heatmap overlay", bounds.x + bounds.width + 5, bounds.y + 12);
+		graphics.drawString("Right click this button", bounds.x + bounds.width + 5, bounds.y + location.getY());
+		graphics.drawString("for Heatmap overlay", bounds.x + bounds.width + 5, bounds.y + 12 + location.getY());
 
 		return super.render(graphics);
 	}
