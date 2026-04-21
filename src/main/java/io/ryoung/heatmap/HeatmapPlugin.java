@@ -182,7 +182,7 @@ public class HeatmapPlugin extends Plugin
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVarbitValue(VarbitID.BANK_TAB_DISPLAY);
+		int currentTab = client.getVarbitValue(VarbitID.BANK_CURRENTTAB);
 
 		if (currentTab > 0 && currentTab < 14)
 		{
